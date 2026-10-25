@@ -1,5 +1,5 @@
 /**
- * 地図クラフト - 3Dエンジン (リアル日本パズル ＆ リアル3D地球儀)
+ * 地図クラフト - 3Dエンジン (リアル日本パズル ＆ リアル世界国形パズル＆地球儀)
  */
 class MapCraft3D {
   constructor(containerId) {
@@ -15,29 +15,23 @@ class MapCraft3D {
     this.currentRegion = "hokkaido_tohoku";
     this.difficultyLevel = "easy"; // "easy" | "normal" | "hard"
 
-    // ジオメトリ＆ピース管理
     this.boardGroup = null;
-    this.globeData = null; // { globeGroup, earthMesh, tiltGroup, radius }
-    this.slots = new Map(); // id -> slot data
-    this.pieceMeshes = new Map(); // id -> piece data
+    this.globeData = null;
+    this.slots = new Map();
+    this.pieceMeshes = new Map();
 
-    // ドラッグ＆ドロップ状態管理
     this.dragPlane = new THREE.Plane();
     this.planeIntersect = new THREE.Vector3();
     this.draggedPiece = null;
     this.dragOffset = new THREE.Vector3();
     this.isDragging = false;
-    this.pointerDownPos = new THREE.Vector2();
 
-    // パーティクル＆アニメーション
     this.particles = [];
     this.isAnimatingCamera = false;
 
-    // コールバック
-    this.onSlotClick = null;     // (item) => void (空白クリックヒント)
-    this.onPieceGrab = null;     // (item) => void (ドラッグ開始・シルエット表示)
-    this.onPieceDrop = null;     // (item, success) => void
-    this.onPiecePlaced = null;   // (item) => void (配置成功)
+    this.onSlotClick = null;
+    this.onPieceGrab = null;
+    this.onPiecePlaced = null;
 
     this.init();
   }
@@ -46,16 +40,13 @@ class MapCraft3D {
     const width = this.container.clientWidth || window.innerWidth;
     const height = this.container.clientHeight || window.innerHeight;
 
-    // シーン
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xbfe8f5);
     this.scene.fog = new THREE.FogExp2(0xbfe8f5, 0.012);
 
-    // カメラ
     this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    this.camera.position.set(0, 36, 32);
+    this.camera.position.set(0, 32, 28);
 
-    // レンダラー
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -63,7 +54,6 @@ class MapCraft3D {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.container.appendChild(this.renderer.domElement);
 
-    // OrbitControls
     if (typeof THREE.OrbitControls !== "undefined") {
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
@@ -74,29 +64,22 @@ class MapCraft3D {
       this.controls.target.set(0, 0, 0);
     }
 
-    // ライティング
     this.setupLighting();
-
-    // 地理データの事前読み込み
     await window.geoUtils.loadData();
-
-    // ドラッグ＆ドロップ用イベントリスナー
     this.setupInteractions();
 
-    // リサイズ
     window.addEventListener("resize", () => this.onWindowResize());
 
-    // アニメーションループ開始
     this.animate = this.animate.bind(this);
     requestAnimationFrame(this.animate);
   }
 
   setupLighting() {
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x556677, 0.75);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x556677, 0.8);
     hemiLight.position.set(0, 50, 0);
     this.scene.add(hemiLight);
 
-    const dirLight = new THREE.DirectionalLight(0xfff9e6, 1.15);
+    const dirLight = new THREE.DirectionalLight(0xfff9e6, 1.2);
     dirLight.position.set(25, 45, 30);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
@@ -108,21 +91,18 @@ class MapCraft3D {
     dirLight.shadow.camera.right = d;
     dirLight.shadow.camera.top = d;
     dirLight.shadow.camera.bottom = -d;
-    dirLight.shadow.bias = -0.0004;
     this.scene.add(dirLight);
 
-    const fillLight = new THREE.DirectionalLight(0x90cdf4, 0.4);
+    const fillLight = new THREE.DirectionalLight(0x90cdf4, 0.45);
     fillLight.position.set(-25, 20, -25);
     this.scene.add(fillLight);
   }
 
-  // ステージ読み込み (日本パズル or リアル地球儀)
   loadStage(mode, regionId, itemsList, level = "easy") {
     this.currentMode = mode;
     this.currentRegion = regionId;
     this.difficultyLevel = level;
 
-    // クリーンアップ
     if (this.boardGroup) {
       this.scene.remove(this.boardGroup);
       this.boardGroup = null;
@@ -148,40 +128,29 @@ class MapCraft3D {
   }
 
   // ==========================================
-  // 1. 日本地図リアルパズルステージ
+  // 日本パズルステージ (待機位置を地図のすぐ横にスマート配置)
   // ==========================================
   setupJapanStage(itemsList, level) {
-    // 完璧な形の白紙の日本地図ボード
     this.boardGroup = window.geoUtils.createJapanBoard(level);
     this.scene.add(this.boardGroup);
 
-    // 水平ドラッグ平面の設定 (Y = 1.0)
-    this.dragPlane.set(new THREE.Vector3(0, 1, 0), -1.0);
-
+    this.dragPlane.set(new THREE.Vector3(0, 1, 0), -1.2);
     const qTexture = this.createQuestionTexture();
 
-    // アイテムごとのリアル立体ピースとスロットを構築
     itemsList.forEach((item, index) => {
-      // 地方に応じたカラー、難易度（普通・達人は木製/白）
       let pieceColor = 0x38a169;
-      if (level === "easy") {
-        pieceColor = item.color || 0x48bb78;
-      } else {
-        pieceColor = 0xe2d4b7; // リアルな木製パズル調
-      }
+      if (level === "easy") pieceColor = item.color || 0x48bb78;
+      else pieceColor = 0xe2d4b7;
 
       const prefResult = window.geoUtils.createJapanPrefectureMesh(item.name, pieceColor);
       if (!prefResult) return;
 
       const { group: pieceGroup, centroid } = prefResult;
-
-      // 正解位置 (スロット座標)
       const targetPos = new THREE.Vector3(centroid.x, 0.4, -centroid.y);
 
-      // 手持ち待機位置 (トレイ風に下部または画面手前に並べる)
-      const trayPos = this.calculateTrayPosition(index, itemsList.length);
+      // 地図のすぐ手前・左右に近づけて配置 (移動距離を大幅短縮！)
+      const trayPos = this.calculateSmartTrayPosition(index, itemsList.length, centroid);
 
-      // ピースの初期配置（手持ち待機位置へ）
       pieceGroup.position.copy(trayPos);
       pieceGroup.userData = {
         id: item.id,
@@ -192,8 +161,8 @@ class MapCraft3D {
       };
       this.scene.add(pieceGroup);
 
-      // スロット側：「？」ピン（未配置の目印・ヒント用）
-      const qPinGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.1, 16);
+      // 「？」ピン
+      const qPinGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.12, 16);
       const qPinMat = new THREE.MeshStandardMaterial({ map: qTexture, roughness: 0.3 });
       const qPin = new THREE.Mesh(qPinGeo, qPinMat);
       qPin.position.set(centroid.x, 0.8, -centroid.y);
@@ -201,14 +170,13 @@ class MapCraft3D {
       qPin.userData = { id: item.id, item: item, isPin: true, initialY: 0.8 };
       this.scene.add(qPin);
 
-      // ミニチュア装飾 (正解時にポップアップ)
+      // ミニチュア装飾
       const decoGroup = this.createMiniDeco(item);
       decoGroup.position.copy(targetPos);
       decoGroup.position.y += 0.5;
       decoGroup.visible = false;
       this.scene.add(decoGroup);
 
-      // スロット情報
       this.slots.set(item.id, {
         id: item.id,
         item: item,
@@ -218,7 +186,6 @@ class MapCraft3D {
         isPlaced: false
       });
 
-      // ピース情報
       this.pieceMeshes.set(item.id, {
         id: item.id,
         item: item,
@@ -229,71 +196,62 @@ class MapCraft3D {
       });
     });
 
-    // カメラを日本全体または指定地方が見える位置へ
     this.focusRegion("japan", this.currentRegion);
   }
 
-  // 手持ちトレイの位置計算 (手前に美しく整列)
-  calculateTrayPosition(index, total) {
-    const cols = Math.min(total, 9);
+  // 地図のすぐ近く（手前または両サイド）に待機させるスマート位置計算
+  calculateSmartTrayPosition(index, total, centroid) {
+    // 地図のすぐ手前 (Z: 14〜18) に横並びで配置し、移動距離を短縮
+    const cols = Math.min(total, 8);
     const row = Math.floor(index / cols);
     const col = index % cols;
 
-    const spacingX = 4.2;
+    const spacingX = 3.8;
     const startX = -((cols - 1) * spacingX) / 2;
-    const startZ = 20 + row * 4.2;
+    const startZ = 13.5 + row * 3.8; // 従来の20から13.5に大幅に近づけた！
 
     return new THREE.Vector3(startX + col * spacingX, 0.4, startZ);
   }
 
   // ==========================================
-  // 2. 世界地図リアル3D地球儀ステージ
+  // 世界地図ステージ (本物の国のリアル形状ポリゴンを完全生成！)
   // ==========================================
   setupWorldGlobeStage(itemsList, level) {
-    // リアル3D地球儀の構築 (真鍮スタンド付き)
     this.globeData = window.geoUtils.createRealGlobe(12);
     this.scene.add(this.globeData.globeGroup);
 
-    // 球面ドラッグ用
     const radius = this.globeData.radius;
     const qTexture = this.createQuestionTexture();
 
     itemsList.forEach((item, index) => {
-      // 経度・緯度から地球儀上の球面3D位置を取得
+      // 経度・緯度から地球儀上の3D位置を算出
       const spherePos = window.geoUtils.latLonToSphere(item.grid.z * -2, item.grid.x * 8, radius);
 
-      // 国ピース（立体エンブレム・プレート）
-      const pieceGroup = new THREE.Group();
-      const geom = new THREE.BoxGeometry(2.0, 0.4, 2.0);
-      const mat = new THREE.MeshStandardMaterial({
-        color: item.color || 0x3182ce,
-        roughness: 0.3,
-        metalness: 0.2
-      });
-      const mesh = new THREE.Mesh(geom, mat);
-      mesh.castShadow = true;
-      pieceGroup.add(mesh);
+      // ★重要★ 本物の国の形状（ExtrudeGeometry）ポリゴンを生成！
+      let pieceGroup = null;
+      const countryResult = window.geoUtils.createWorldCountryMesh(item.nameEn, item.color || 0x3182ce);
 
-      // 国旗・アイコンラベル
-      const labelCanvas = document.createElement("canvas");
-      labelCanvas.width = 128;
-      labelCanvas.height = 128;
-      const ctx = labelCanvas.getContext("2d");
-      ctx.fillStyle = item.color || "#3182ce";
-      ctx.fillRect(0, 0, 128, 128);
-      ctx.font = "60px sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(item.flag || "📍", 64, 64);
-      const labelTex = new THREE.CanvasTexture(labelCanvas);
-      const labelMat = new THREE.MeshBasicMaterial({ map: labelTex });
-      const labelMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.6), labelMat);
-      labelMesh.rotation.x = -Math.PI / 2;
-      labelMesh.position.y = 0.22;
-      pieceGroup.add(labelMesh);
+      if (countryResult) {
+        pieceGroup = countryResult.group;
+        pieceGroup.scale.set(0.65, 0.65, 0.65); // 地球儀に合わせてスケール調整
+      } else {
+        // フォールバック
+        pieceGroup = new THREE.Group();
+        const geom = new THREE.BoxGeometry(2.2, 0.4, 2.2);
+        const mat = new THREE.MeshStandardMaterial({ color: item.color || 0x3182ce });
+        pieceGroup.add(new THREE.Mesh(geom, mat));
+      }
 
-      // 待機位置
-      const trayPos = this.calculateGlobeTrayPosition(index, itemsList.length);
+      // 国旗・エンブレムの追加
+      const flagGeo = new THREE.BoxGeometry(0.8, 0.5, 0.05);
+      const flagMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+      const flagMesh = new THREE.Mesh(flagGeo, flagMat);
+      flagMesh.position.set(0, 0.6, 0);
+      pieceGroup.add(flagMesh);
+
+      // 待機位置：地球儀の手前・左右に近づけて配置
+      const trayPos = this.calculateGlobeCloseTrayPosition(index, itemsList.length);
+
       pieceGroup.position.copy(trayPos);
       pieceGroup.userData = {
         id: item.id,
@@ -338,23 +296,21 @@ class MapCraft3D {
       });
     });
 
-    // 地球儀が見やすいカメラ位置へ
-    this.camera.position.set(0, 12, 38);
+    this.camera.position.set(0, 10, 32);
     if (this.controls) this.controls.target.set(0, 0, 0);
   }
 
-  calculateGlobeTrayPosition(index, total) {
-    const angle = (index / total) * Math.PI * 1.5 - Math.PI * 0.75;
-    const r = 24;
-    return new THREE.Vector3(Math.sin(angle) * r, -8, Math.cos(angle) * r + 4);
+  calculateGlobeCloseTrayPosition(index, total) {
+    const angle = (index / total) * Math.PI * 1.3 - Math.PI * 0.65;
+    const r = 18; // 従来の24から18に近づけた！
+    return new THREE.Vector3(Math.sin(angle) * r, -4, Math.cos(angle) * r + 2);
   }
 
   // ==========================================
-  // 3. 3D ドラッグ＆ドロップ インタラクション
+  // ドラッグ＆ドロップ操作 (移動のしやすさを極限まで改善！)
   // ==========================================
   setupInteractions() {
     const dom = this.renderer.domElement;
-
     dom.addEventListener("pointerdown", (e) => this.onPointerDown(e));
     window.addEventListener("pointermove", (e) => this.onPointerMove(e));
     window.addEventListener("pointerup", (e) => this.onPointerUp(e));
@@ -365,11 +321,9 @@ class MapCraft3D {
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    this.pointerDownPos.set(event.clientX, event.clientY);
 
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
-    // 1. 手持ちピースのドラッグ判定
     const pieceMeshesList = [];
     this.pieceMeshes.forEach((p) => {
       if (!p.isPlaced) pieceMeshesList.push(p.meshGroup);
@@ -383,32 +337,27 @@ class MapCraft3D {
       }
 
       if (root.userData && root.userData.id && !root.userData.isPlaced) {
-        // ドラッグ開始！
         this.draggedPiece = root;
         this.isDragging = true;
-        if (this.controls) this.controls.enabled = false; // カメラ回転を一時停止
+        if (this.controls) this.controls.enabled = false;
 
-        // ピースをふわっと持ち上げる
-        root.position.y += 1.6;
+        root.position.y += 2.0;
 
-        // ドラッグ平面の計算
-        this.dragPlane.setFromNormalAndCoplanarPoint(this.camera.getWorldDirection(new THREE.Vector3()).negate(), root.position);
+        this.dragPlane.setFromNormalAndCoplanarPoint(
+          this.camera.getWorldDirection(new THREE.Vector3()).negate(),
+          root.position
+        );
         if (this.raycaster.ray.intersectPlane(this.dragPlane, this.planeIntersect)) {
           this.dragOffset.copy(this.planeIntersect).sub(root.position);
         }
 
-        // 音声効果
         if (window.soundManager) window.soundManager.playPickup();
-
-        // 形状ズームビューアの表示コールバック
-        if (this.onPieceGrab) {
-          this.onPieceGrab(root.userData.item);
-        }
+        if (this.onPieceGrab) this.onPieceGrab(root.userData.item);
         return;
       }
     }
 
-    // 2. 空白スロットの「？」ピンクリック判定 (ヒント表示)
+    // 「？」ピン判定
     const pinList = [];
     this.slots.forEach((s) => {
       if (!s.isPlaced && s.qPin) pinList.push(s.qPin);
@@ -418,9 +367,7 @@ class MapCraft3D {
     if (pinIntersects.length > 0) {
       const pinObj = pinIntersects[0].object;
       if (pinObj.userData && pinObj.userData.item) {
-        if (this.onSlotClick) {
-          this.onSlotClick(pinObj.userData.item);
-        }
+        if (this.onSlotClick) this.onSlotClick(pinObj.userData.item);
       }
     }
   }
@@ -434,16 +381,14 @@ class MapCraft3D {
 
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
-    // 水平面またはドラッグ平面上をピースが追従
     if (this.currentMode === "japan") {
-      const horizontalPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -2.0);
+      const horizontalPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -2.2);
       if (this.raycaster.ray.intersectPlane(horizontalPlane, this.planeIntersect)) {
         this.draggedPiece.position.x = this.planeIntersect.x;
         this.draggedPiece.position.z = this.planeIntersect.z;
-        this.draggedPiece.position.y = 2.0; // 浮いた状態
+        this.draggedPiece.position.y = 2.2;
       }
     } else {
-      // 地球儀モード
       if (this.raycaster.ray.intersectPlane(this.dragPlane, this.planeIntersect)) {
         this.draggedPiece.position.copy(this.planeIntersect).sub(this.dragOffset);
       }
@@ -462,7 +407,6 @@ class MapCraft3D {
     if (this.controls) this.controls.enabled = true;
 
     const targetPos = piece.userData.targetPos;
-    // 距離判定 (日本ならXZ平面、地球儀なら球面距離)
     let dist;
     if (this.currentMode === "japan") {
       dist = Math.hypot(piece.position.x - targetPos.x, piece.position.z - targetPos.z);
@@ -470,19 +414,16 @@ class MapCraft3D {
       dist = piece.position.distanceTo(targetPos);
     }
 
-    // スナップ許容距離 (3.8単位以内なら正解として吸着！)
-    const snapThreshold = this.currentMode === "japan" ? 3.8 : 5.0;
+    // スナップ許容範囲を 4.5（広め）にして快適操作！
+    const snapThreshold = this.currentMode === "japan" ? 4.5 : 5.5;
 
     if (dist <= snapThreshold) {
-      // 🎉 正解！カチッと吸着配置！
       this.snapPieceToSlot(piece.userData.id);
     } else {
-      // ❌ 不正解！元のトレイへポヨンと戻る
       this.bouncePieceBack(piece);
     }
   }
 
-  // スロットへの吸着ドロップ
   snapPieceToSlot(id) {
     const pieceData = this.pieceMeshes.get(id);
     const slotData = this.slots.get(id);
@@ -492,14 +433,12 @@ class MapCraft3D {
     slotData.isPlaced = true;
     pieceData.meshGroup.userData.isPlaced = true;
 
-    // 「？」ピンを非表示
     if (slotData.qPin) {
       if (this.currentMode === "japan") this.scene.remove(slotData.qPin);
       else if (this.globeData) this.globeData.tiltGroup.remove(slotData.qPin);
       slotData.qPin = null;
     }
 
-    // スロット位置へピタッと吸着アニメーション
     const startPos = pieceData.meshGroup.position.clone();
     const endPos = pieceData.targetPos.clone();
     endPos.y = this.currentMode === "japan" ? 0.4 : pieceData.targetPos.y;
@@ -513,16 +452,13 @@ class MapCraft3D {
       } else {
         pieceData.meshGroup.position.copy(endPos);
 
-        // ミニチュア装飾をポップイン
         if (slotData.decoGroup) {
           slotData.decoGroup.visible = true;
           this.popInDeco(slotData.decoGroup);
         }
 
-        // 星パーティクル
         this.spawnParticles(endPos.x, endPos.y + 1, endPos.z, pieceData.item.color);
 
-        // 音声効果 (カチッ＋正解音＋音声読み上げ)
         if (window.soundManager) {
           window.soundManager.playPlace();
           window.soundManager.playCorrect();
@@ -530,28 +466,22 @@ class MapCraft3D {
           window.soundManager.speakName(`正解！${pieceData.item.name}！${capText}`);
         }
 
-        // コールバック
-        if (this.onPiecePlaced) {
-          this.onPiecePlaced(pieceData.item);
-        }
+        if (this.onPiecePlaced) this.onPiecePlaced(pieceData.item);
       }
     };
     requestAnimationFrame(animSnap);
   }
 
-  // 不正解時のポヨン復帰アニメーション
   bouncePieceBack(pieceMesh) {
     if (window.soundManager) window.soundManager.playWrong();
 
     const startPos = pieceMesh.position.clone();
     const targetPos = pieceMesh.userData.trayPos.clone();
     const startTime = performance.now();
-    const duration = 350;
+    const duration = 320;
 
     const animBack = (now) => {
-      const elapsed = now - startTime;
-      const t = Math.min(elapsed / duration, 1);
-      // バウンスイージング
+      const t = Math.min((now - startTime) / duration, 1);
       const ease = t * t * (3 - 2 * t);
       pieceMesh.position.lerpVectors(startPos, targetPos, ease);
 
@@ -564,7 +494,6 @@ class MapCraft3D {
     requestAnimationFrame(animBack);
   }
 
-  // 装飾のポップイン
   popInDeco(group) {
     let s = 0.1;
     const start = performance.now();
@@ -577,10 +506,8 @@ class MapCraft3D {
     requestAnimationFrame(anim);
   }
 
-  // ミニチュア装飾オブジェクト生成
   createMiniDeco(item) {
     const group = new THREE.Group();
-    // 旗ポール
     const poleGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.2);
     const poleMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
     const pole = new THREE.Mesh(poleGeo, poleMat);
@@ -595,30 +522,24 @@ class MapCraft3D {
     return group;
   }
 
-  // クエスチョンブロック (?) のテクスチャ
   createQuestionTexture() {
     const canvas = document.createElement("canvas");
     canvas.width = 128;
     canvas.height = 128;
     const ctx = canvas.getContext("2d");
-
     ctx.fillStyle = "#ecc94b";
     ctx.fillRect(0, 0, 128, 128);
-
     ctx.strokeStyle = "#b7791f";
     ctx.lineWidth = 10;
     ctx.strokeRect(5, 5, 118, 118);
-
     ctx.font = "bold 80px sans-serif";
     ctx.fillStyle = "#744210";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("?", 64, 68);
-
     return new THREE.CanvasTexture(canvas);
   }
 
-  // 星パーティクル
   spawnParticles(x, y, z, colorHex) {
     const pGeo = new THREE.BoxGeometry(0.18, 0.18, 0.18);
     const pMat = new THREE.MeshBasicMaterial({ color: colorHex || 0xffd700 });
@@ -639,7 +560,6 @@ class MapCraft3D {
     }
   }
 
-  // リージョンにフォーカス
   focusRegion(mode, regionId) {
     if (mode === "japan") {
       const reg = JAPAN_REGIONS[regionId];
@@ -648,7 +568,7 @@ class MapCraft3D {
       }
     } else {
       if (this.globeData) {
-        this.smoothCameraTo(0, 12, 38, 0, 0, 0);
+        this.smoothCameraTo(0, 10, 32, 0, 0, 0);
       }
     }
   }
@@ -689,12 +609,10 @@ class MapCraft3D {
       this.controls.update();
     }
 
-    // 地球儀モード時：ゆっくりと微細に自転
     if (this.globeData && !this.isDragging) {
-      this.globeData.earthMesh.rotation.y += 0.001;
+      this.globeData.earthMesh.rotation.y += 0.0012;
     }
 
-    // 「？」ピンのふわふわ浮遊
     const now = time * 0.003;
     this.slots.forEach((slot) => {
       if (slot.qPin && this.currentMode === "japan") {
@@ -703,7 +621,6 @@ class MapCraft3D {
       }
     });
 
-    // パーティクル更新
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.position.x += p.userData.vx;

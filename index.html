@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>地図クラフト - リアル日本地図パズル ＆ 3D地球儀 (楽しく形を暗記！)</title>
-  <meta name="description" content="本物のリアルな都道府県の形をドラッグ＆ドロップで白地図にハメる立体パズル！リアルな3D地球儀モードやシルエット特訓モードで、国や県の形が完璧に覚えられる！">
+  <title>地図クラフト - リアル立体パズル ＆ 3D地球儀 (完璧な形を暗記！)</title>
+  <meta name="description" content="本物のリアルな都道府県・国の形をドラッグ＆ドロップで白地図にハメる立体パズル！回転する3D地球儀、世界の形クイズ、国旗クイズを完全網羅！">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗺️</text></svg>">
 </head>
@@ -33,7 +33,7 @@
       <nav class="mode-tabs">
         <button class="mode-tab active" data-mode="japan">🗾 日本地図</button>
         <button class="mode-tab" data-mode="world">🌍 リアル地球儀</button>
-        <button class="mode-tab mode-tab-quiz" data-mode="quiz">⚡ シルエット特訓</button>
+        <button class="mode-tab mode-tab-quiz" data-mode="quiz">⚡ 特訓クイズ道場</button>
       </nav>
 
       <!-- セレクター群 (地域 ＆ 難易度) -->
@@ -48,10 +48,11 @@
 
       <!-- ツールボタングループ -->
       <div class="top-tools">
-        <button id="btn-voice" class="tool-btn btn-active" title="音声読み上げ">🗣️ 音声読上: ON</button>
-        <button id="btn-sound" class="tool-btn btn-active" title="効果音のON/OFF">🔊 サウンド: ON</button>
+        <button id="btn-tray-pos" class="tool-btn" title="トレイ位置の変更">📐 トレイ: 下部</button>
+        <button id="btn-voice" class="tool-btn btn-active" title="音声読み上げ">🗣️ 読上げ: ON</button>
+        <button id="btn-sound" class="tool-btn btn-active" title="効果音のON/OFF">🔊 効果音: ON</button>
         <button id="btn-bgm" class="tool-btn" title="BGMのON/OFF">🎵 BGM: OFF</button>
-        <button id="btn-ruby" class="tool-btn btn-active" title="ふりがなの表示/非表示">📛 ふりがな: ON</button>
+        <button id="btn-ruby" class="tool-btn btn-active" title="ふりがなの表示/非表示">📛 ルビ: ON</button>
         <button id="btn-reset-cam" class="tool-btn" title="視点をリセット">🎥 視点リセット</button>
         <button id="btn-help" class="tool-btn" title="あそびかた">❓ あそびかた</button>
       </div>
@@ -68,9 +69,9 @@
       </div>
     </section>
 
-    <!-- 下部インベントリトレイ (リアル形状ピース一覧) -->
+    <!-- ピーストレイ (リアル形状ピース一覧) -->
     <footer class="inventory-tray">
-      <div class="tray-title">🎒 ピーストレイ（ドラッグ＆ドロップで白地図にハメよう！クリックでも配置できるよ）</div>
+      <div class="tray-title">🎒 ピーストレイ（ドラッグ＆ドロップで白地図にハメよう！カードクリックでも吸着配置できるよ）</div>
       <div id="inventory-items" class="inventory-items"></div>
     </footer>
   </div>
@@ -86,37 +87,31 @@
         <button id="btn-close-hint" class="modal-close-btn" aria-label="閉じる">✕</button>
       </div>
       <div class="modal-body">
-        <!-- 首都 / 県庁所在地 (名前は出さない！) -->
         <div class="hint-group">
           <div id="hint-capital-title" class="hint-label">🏛️ 県庁所在地 / 首都</div>
           <div id="hint-capital-value" class="capital-display">---</div>
         </div>
 
-        <!-- 特産品・名物 -->
         <div class="hint-group">
           <div class="hint-label">🍎 代表的な特産品・名産物</div>
           <div id="hint-specialties" class="badge-list"></div>
         </div>
 
-        <!-- 名所・観光地 -->
         <div class="hint-group">
           <div class="hint-label">🏯 有名な名所・シンボル</div>
           <div id="hint-landmarks" class="badge-list"></div>
         </div>
 
-        <!-- 形状の特徴ヒント -->
         <div class="hint-group">
           <div class="hint-label">🧩 形状の特徴ヒント</div>
           <div id="hint-shape-desc" class="shape-desc-box">---</div>
         </div>
 
-        <!-- 豆知識ヒント -->
         <div class="hint-group">
           <div class="hint-label">💡 豆知識トリビア</div>
           <div id="hint-trivia-text" class="trivia-box">---</div>
         </div>
 
-        <!-- 推理案内バナー (答えの選択肢は出さない！) -->
         <div class="hint-group">
           <div id="hint-choices"></div>
         </div>
@@ -124,26 +119,35 @@
     </div>
   </div>
 
-  <!-- ⚡ シルエット特訓ミニゲームモーダル -->
-  <div id="modal-silhouette-quiz" class="modal-overlay">
+  <!-- ⚡ 4大特訓クイズ道場モーダル -->
+  <div id="modal-quiz-dojo" class="modal-overlay">
     <div class="modal-window">
       <div class="modal-header" style="background: #c05621;">
-        <div class="modal-title">⚡ シルエット瞬間記憶特訓！</div>
-        <button id="btn-close-quiz" class="modal-close-btn" aria-label="閉じる">✕</button>
+        <div class="modal-title">⚡ 4大特訓クイズ道場！</div>
+        <button id="btn-close-quiz-dojo" class="modal-close-btn" aria-label="閉じる">✕</button>
       </div>
       <div class="modal-body">
+        <!-- クイズジャンル切り替えタブ -->
+        <div class="quiz-type-tabs">
+          <button class="quiz-type-tab active" data-type="japan_shape">🗾 日本の形</button>
+          <button class="quiz-type-tab" data-type="world_shape">🌍 世界の形</button>
+          <button class="quiz-type-tab" data-type="world_flag">🚩 世界の国旗</button>
+          <button class="quiz-type-tab" data-type="capital">🏛️ 首都当て</button>
+        </div>
+
         <div class="quiz-header-bar">
-          <span id="quiz-step" style="font-weight: 800; font-size: 1.05rem;">1 / 10 問目</span>
+          <span id="quiz-step" style="font-weight: 800; font-size: 1rem;">1 / 10 問目</span>
           <span id="quiz-score-badge" class="quiz-badge">スコア: 0</span>
         </div>
-        <!-- シルエット表示カード -->
-        <div class="quiz-silhouette-card">
-          <div id="quiz-silhouette-view"></div>
+
+        <!-- クイズ表示カード (シルエット / 特大国旗 / 首都) -->
+        <div id="quiz-display-card" class="quiz-display-card"></div>
+
+        <div id="quiz-question-label" style="text-align: center; font-size: 0.9rem; font-weight: bold; color: #4a5568; margin-bottom: 8px;">
+          この形はどこかな？
         </div>
-        <div style="text-align: center; font-size: 0.9rem; font-weight: bold; color: #4a5568; margin-bottom: 10px;">
-          このシルエットはどの都道府県かな？
-        </div>
-        <!-- 3択ボタン -->
+
+        <!-- 3択選択肢ボタン -->
         <div id="quiz-choices-container" class="quiz-choices"></div>
       </div>
     </div>
@@ -155,7 +159,7 @@
       <div class="modal-body complete-content">
         <div class="complete-icon">🏆✨</div>
         <h2 class="complete-title"><span id="comp-region-name">北海道・東北地方</span> 完全制覇！</h2>
-        <p style="color: #4a5568; font-size: 0.95rem; margin-top: 4px;">本物の形状を完璧にマスターしました！</p>
+        <p style="color: #4a5568; font-size: 0.9rem; margin-top: 4px;">本物のリアルな形状を完璧にマスターしました！</p>
 
         <div class="complete-stats">
           <div class="stat-item">
@@ -180,29 +184,23 @@
         <div class="modal-title">📖 地図クラフトのあそびかた</div>
         <button id="btn-close-help" class="modal-close-btn" aria-label="閉じる">✕</button>
       </div>
-      <div class="modal-body" style="font-size: 0.9rem; line-height: 1.6; color: #2d3748;">
-        <h3 style="color: #2b6cb0; margin-bottom: 6px;">🎯 本物の形を覚えるルール</h3>
-        <p style="margin-bottom: 12px;">
-          各都道府県や国は、<strong>本物の境界線とシルエット</strong>を持ったリアルな立体ピースです！<br>
-          下部のトレイからピースを<strong>ドラッグ＆ドロップ</strong>して、白地図の正しい位置へカチッとはめ込みましょう。
+      <div class="modal-body" style="font-size: 0.88rem; line-height: 1.6; color: #2d3748;">
+        <h3 style="color: #2b6cb0; margin-bottom: 4px;">🎯 本物のリアルな形を覚える</h3>
+        <p style="margin-bottom: 10px;">
+          各都道府県や国は、<strong>本物の国境線と海岸線</strong>を持ったリアルな立体ピースです。<br>
+          トレイからピースをドラッグして、白地図の正しい位置へ持っていくと、磁石のように<strong>「カチッ！」</strong>と吸着してハマります！<br>
+          ※ピースカードをクリックするだけでも、地図へビューンと飛んで吸着配置できます。
         </p>
 
-        <h3 style="color: #2b6cb0; margin-bottom: 6px;">💡 ヒントの使いかた</h3>
-        <p style="margin-bottom: 12px;">
-          白地図の「？」ピンをクリックすると、県庁所在地や特産品・形状の特徴などのヒントが表示されます。<br>
-          <strong>※答えは表示されない</strong>ので、ヒントから推理して正しい形のピースを探しましょう！
+        <h3 style="color: #2b6cb0; margin-bottom: 4px;">📐 トレイ位置の切り替え</h3>
+        <p style="margin-bottom: 10px;">
+          「📐 トレイ: 下部」ボタンを押すと、トレイが<strong>「画面の左横」</strong>に移動します！<br>
+          マウスや指の移動距離が短くなり、地図のすぐ横からサクサクハメられます。
         </p>
 
-        <h3 style="color: #2b6cb0; margin-bottom: 6px;">🔥 難易度モード（くもん式ステップアップ）</h3>
-        <ul style="margin-left: 20px; margin-bottom: 12px;">
-          <li><strong>入門:</strong> 地方ごとに色分けされ、境界線もあります。</li>
-          <li><strong>中級:</strong> 純白の白地図！色に頼らず形と位置で勝負。</li>
-          <li><strong>達人:</strong> 境界線すら存在しない完全白紙マップ！海岸線と隣接県の噛み合わせだけで完成させよう。</li>
-        </ul>
-
-        <h3 style="color: #2b6cb0; margin-bottom: 6px;">⚡ シルエット特訓モード</h3>
+        <h3 style="color: #2b6cb0; margin-bottom: 4px;">⚡ 4大特訓クイズ道場</h3>
         <p>
-          画面上部の「⚡ シルエット特訓」タブを押すと、シルエットだけを見て瞬時に県名を当てるスピード暗記特訓ができます！
+          「⚡ 特訓クイズ道場」タブで、<strong>日本の形・世界の形・国旗・首都</strong>の4つのジャンルでスピード特訓ができます！世界の膨大な国々を網羅しています。
         </p>
       </div>
     </div>
@@ -212,11 +210,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
-  <!-- TopoJSON クライアント (ローカル保存済み) -->
   <script src="js/topojson-client.min.js"></script>
 
-  <!-- アプリケーションスクリプト -->
+  <!-- スクリプト -->
   <script src="js/data-japan.js"></script>
   <script src="js/data-world.js"></script>
   <script src="js/geo-utils.js"></script>
