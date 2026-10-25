@@ -1,4 +1,4 @@
-name: Deploy GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -15,17 +15,36 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  # 方式1: gh-pages ブランチへの自動デプロイ (ブランチデプロイ方式)
+  deploy-gh-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          exclude_assets: '.git,.github'
+
+  # 方式2: GitHub Actions Pages 公式デプロイ (Actionsデプロイ方式)
+  deploy-actions:
+    needs: deploy-gh-pages
+    runs-on: ubuntu-latest
+    continue-on-error: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
+        with:
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
