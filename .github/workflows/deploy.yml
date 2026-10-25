@@ -15,42 +15,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # 方式1: gh-pages ブランチへの自動デプロイ (ブランチデプロイ方式)
-  deploy-gh-pages:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
-
-      - name: Deploy to gh-pages branch
-        uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
-          exclude_assets: '.git,.github'
+          fetch-depth: 0
 
-  # 方式2: GitHub Actions Pages 公式デプロイ (Actionsデプロイ方式)
-  deploy-actions:
-    needs: deploy-gh-pages
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Sync to gh-pages branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B gh-pages
+          git push origin gh-pages --force
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
-        with:
-          enablement: true
+        continue-on-error: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
+        continue-on-error: true
         with:
           path: '.'
 
       - name: Deploy to GitHub Pages
         id: deployment
+        continue-on-error: true
         uses: actions/deploy-pages@v4
