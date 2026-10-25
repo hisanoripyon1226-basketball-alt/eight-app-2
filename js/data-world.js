@@ -64,6 +64,7 @@ const WORLD_COUNTRIES = [
   // --- アジア ---
   {
     id: "japan",
+    shapeHint: "北東から南西へ弓なりに弧を描く美しい島国の形！",
     name: "日本",
     nameEn: "Japan",
     capital: "東京",
@@ -79,6 +80,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "china",
+    shapeHint: "ユーラシア東部に広がる雄大なニワトリのようなシルエット！",
     name: "中国",
     nameEn: "China",
     capital: "北京",
@@ -94,6 +96,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "korea",
+    shapeHint: "アジア大陸から南へ突き出た朝鮮半島の南半分の形！",
     name: "韓国",
     nameEn: "South Korea",
     capital: "ソウル",
@@ -109,6 +112,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "india",
+    shapeHint: "インド洋に向かって鋭い逆三角形を描く巨大な半島！",
     name: "インド",
     nameEn: "India",
     capital: "ニューデリー",
@@ -124,6 +128,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "thailand",
+    shapeHint: "象の頭（鼻が南のマレー半島へ伸びる）に似た形！",
     name: "タイ",
     nameEn: "Thailand",
     capital: "バンコク",
@@ -139,6 +144,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "vietnam",
+    shapeHint: "インドシナ半島の東岸に沿ってS字型に細長く伸びる形！",
     name: "ベトナム",
     nameEn: "Vietnam",
     capital: "ハノイ",
@@ -154,6 +160,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "indonesia",
+    shapeHint: "赤道直下に東西5000kmにわたり無数の島々が連なる列島の形！",
     name: "インドネシア",
     nameEn: "Indonesia",
     capital: "ジャカルタ",
@@ -169,6 +176,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "saudi_arabia",
+    shapeHint: "アラビア半島の大部分を占める巨大な台形の国土！",
     name: "サウジアラビア",
     nameEn: "Saudi Arabia",
     capital: "リヤド",
@@ -184,6 +192,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "philippines",
+    shapeHint: "太平洋に散りばめられた7000以上の島々が南北に連なる形！",
     name: "フィリピン",
     nameEn: "Philippines",
     capital: "マニラ",
@@ -199,6 +208,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "turkey",
+    shapeHint: "東西に細長いアナトリア半島とヨーロッパ側の東トラキアを持つ形！",
     name: "トルコ",
     nameEn: "Turkey",
     capital: "アンカラ",
@@ -216,6 +226,7 @@ const WORLD_COUNTRIES = [
   // --- ヨーロッパ ---
   {
     id: "uk",
+    shapeHint: "ヨーロッパ北西沖に浮かぶグレートブリテン島と北アイルランドの形！",
     name: "イギリス",
     nameEn: "United Kingdom",
     capital: "ロンドン",
@@ -231,6 +242,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "france",
+    shapeHint: "美しい六角形（アザゴン）と呼ばれるバランスの取れた形！",
     name: "フランス",
     nameEn: "France",
     capital: "パリ",
@@ -246,6 +258,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "germany",
+    shapeHint: "ヨーロッパ中央に位置し、北は海、南はアルプスに接する形！",
     name: "ドイツ",
     nameEn: "Germany",
     capital: "ベルリン",
@@ -261,6 +274,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "italy",
+    shapeHint: "地中海に力強く蹴り出す長靴（ブーツ）のシルエット！",
     name: "イタリア",
     nameEn: "Italy",
     capital: "ローマ",
@@ -276,6 +290,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "spain",
+    shapeHint: "イベリア半島の大部分を占める頑丈な四角形のような形！",
     name: "スペイン",
     nameEn: "Spain",
     capital: "マドリード",
@@ -291,6 +306,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "switzerland",
+    shapeHint: "アルプスの山々に囲まれたヨーロッパ中央のコンパクトな形！",
     name: "スイス",
     nameEn: "Switzerland",
     capital: "ベルン",
@@ -306,6 +322,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "netherlands",
+    shapeHint: "北海に面し、ライン川の河口が広がる平坦な形！",
     name: "オランダ",
     nameEn: "Netherlands",
     capital: "アムステルダム",
@@ -321,6 +338,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "greece",
+    shapeHint: "地中海・エーゲ海に無数の半島と島々が複雑に散らばる形！",
     name: "ギリシャ",
     nameEn: "Greece",
     capital: "アテネ",
@@ -336,6 +354,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "sweden",
+    shapeHint: "スカンジナビア半島の東半分を占める南北に長い優美な形！",
     name: "スウェーデン",
     nameEn: "Sweden",
     capital: "ストックホルム",
@@ -353,6 +372,7 @@ const WORLD_COUNTRIES = [
   // --- 北アメリカ ---
   {
     id: "usa",
+    shapeHint: "北米大陸中央を太平洋から大西洋まで東西に横断する巨大な国土！",
     name: "アメリカ合衆国",
     nameEn: "United States",
     capital: "ワシントンD.C.",
@@ -368,6 +388,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "canada",
+    shapeHint: "北米北部を覆う世界2位の広大な国土と北極海の島々！",
     name: "カナダ",
     nameEn: "Canada",
     capital: "オタワ",
@@ -383,6 +404,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "mexico",
+    shapeHint: "北米から南東へ細くなりながら角のように曲がる形！",
     name: "メキシコ",
     nameEn: "Mexico",
     capital: "メキシコシティ",
@@ -398,6 +420,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "cuba",
+    shapeHint: "カリブ海に横たわるワニのような細長い大きな島の形！",
     name: "キューバ",
     nameEn: "Cuba",
     capital: "ハバナ",
@@ -415,6 +438,7 @@ const WORLD_COUNTRIES = [
   // --- 南アメリカ ---
   {
     id: "brazil",
+    shapeHint: "南米大陸の約半分を占める、ハートのような巨大な形！",
     name: "ブラジル",
     nameEn: "Brazil",
     capital: "ブラジリア",
@@ -430,6 +454,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "argentina",
+    shapeHint: "南米南部をアンデス山脈に沿って南へ細くなるくさび形！",
     name: "アルゼンチン",
     nameEn: "Argentina",
     capital: "ブエノスアイレス",
@@ -445,6 +470,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "peru",
+    shapeHint: "太平洋岸からアンデス山脈・アマゾン川上流へ広がる形！",
     name: "ペルー",
     nameEn: "Peru",
     capital: "リマ",
@@ -460,6 +486,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "chile",
+    shapeHint: "アンデス山脈と太平洋に挟まれ、南北4300kmも続く世界一細長い形！",
     name: "チリ",
     nameEn: "Chile",
     capital: "サンティアゴ",
@@ -475,6 +502,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "colombia",
+    shapeHint: "南米北西端！太平洋と大西洋（カリブ海）の両方に面する形！",
     name: "コロンビア",
     nameEn: "Colombia",
     capital: "ボゴタ",
@@ -492,6 +520,7 @@ const WORLD_COUNTRIES = [
   // --- アフリカ ---
   {
     id: "egypt",
+    shapeHint: "ナイル川が貫く、ほぼ正方形に近いすっきりした幾何学的な形！",
     name: "エジプト",
     nameEn: "Egypt",
     capital: "カイロ",
@@ -507,6 +536,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "kenya",
+    shapeHint: "東アフリカ赤道直下に位置し、インド洋に面する形！",
     name: "ケニア",
     nameEn: "Kenya",
     capital: "ナイロビ",
@@ -522,6 +552,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "south_africa",
+    shapeHint: "アフリカ大陸最南端をぐるりと包む巨大なU字型！",
     name: "南アフリカ共和国",
     nameEn: "South Africa",
     capital: "プレトリア",
@@ -537,6 +568,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "morocco",
+    shapeHint: "アフリカ北西端！ジブラルタル海峡に面する形！",
     name: "モロッコ",
     nameEn: "Morocco",
     capital: "ラバト",
@@ -552,6 +584,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "ghana",
+    shapeHint: "ギニア湾に面した四角形に近いコンパクトな西アフリカの形！",
     name: "ガーナ",
     nameEn: "Ghana",
     capital: "アクラ",
@@ -567,6 +600,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "madagascar",
+    shapeHint: "アフリカ東岸の沖合に浮かぶ、世界4位の巨大な細長い島！",
     name: "マダガスカル",
     nameEn: "Madagascar",
     capital: "アンタナナリボ",
@@ -584,6 +618,7 @@ const WORLD_COUNTRIES = [
   // --- オセアニア ---
   {
     id: "australia",
+    shapeHint: "地球の南半球にぽっかり浮かぶ、大陸まるごと一つの巨大な形！",
     name: "オーストラリア",
     nameEn: "Australia",
     capital: "キャンベラ",
@@ -599,6 +634,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "new_zealand",
+    shapeHint: "南西太平洋に浮かぶ北島と南島の2大島からなる細長い形！",
     name: "ニュージーランド",
     nameEn: "New Zealand",
     capital: "ウェリントン",
@@ -614,6 +650,7 @@ const WORLD_COUNTRIES = [
   },
   {
     id: "fiji",
+    shapeHint: "南太平洋のエメラルドの海に散らばる環礁と島々の形！",
     name: "フィジー",
     nameEn: "Fiji",
     capital: "スバ",

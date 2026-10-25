@@ -1,11 +1,12 @@
 /**
- * 地図クラフト - Web Audio API サウンドシステム
- * 外部ファイル不要で軽快・確実な効果音＆チップチューンBGMを合成生成
+ * 地図クラフト - Web Audio API & 音声合成学習システム
+ * リアルな木製パズルのカチッ音 ＋ ネイティブ音声読み上げ
  */
 class SoundManager {
   constructor() {
     this.ctx = null;
     this.enabled = true;
+    this.voiceEnabled = true;
     this.bgmPlaying = false;
     this.bgmTimer = null;
     this.bgmNoteIndex = 0;
@@ -31,42 +32,47 @@ class SoundManager {
     return this.enabled;
   }
 
-  // ブロック設置音 (カチッ・ドスン)
+  toggleVoice() {
+    this.voiceEnabled = !this.voiceEnabled;
+    return this.voiceEnabled;
+  }
+
+  // 木製・磁石パズルがカチッとはまるリアルなスナップ音
   playPlace() {
     if (!this.enabled) return;
     this.init();
     if (!this.ctx) return;
 
     const t = this.ctx.currentTime;
-    
-    // 低音ドスン (クラフト感)
+
+    // 木のコツンという衝撃音
     const osc1 = this.ctx.createOscillator();
     const gain1 = this.ctx.createGain();
-    osc1.type = "triangle";
-    osc1.frequency.setValueAtTime(140, t);
-    osc1.frequency.exponentialRampToValueAtTime(40, t + 0.12);
-    gain1.gain.setValueAtTime(0.5, t);
-    gain1.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(320, t);
+    osc1.frequency.exponentialRampToValueAtTime(80, t + 0.08);
+    gain1.gain.setValueAtTime(0.6, t);
+    gain1.gain.exponentialRampToValueAtTime(0.01, t + 0.08);
     osc1.connect(gain1);
     gain1.connect(this.ctx.destination);
     osc1.start(t);
-    osc1.stop(t + 0.12);
+    osc1.stop(t + 0.08);
 
-    // 高音カチッ (スナップ感)
+    // 磁石が吸着するカチッという高音
     const osc2 = this.ctx.createOscillator();
     const gain2 = this.ctx.createGain();
-    osc2.type = "square";
-    osc2.frequency.setValueAtTime(800, t);
-    osc2.frequency.exponentialRampToValueAtTime(300, t + 0.05);
-    gain2.gain.setValueAtTime(0.2, t);
-    gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
+    osc2.type = "triangle";
+    osc2.frequency.setValueAtTime(1200, t);
+    osc2.frequency.exponentialRampToValueAtTime(400, t + 0.04);
+    gain2.gain.setValueAtTime(0.35, t);
+    gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.04);
     osc2.connect(gain2);
     gain2.connect(this.ctx.destination);
     osc2.start(t);
-    osc2.stop(t + 0.05);
+    osc2.stop(t + 0.04);
   }
 
-  // 正解音 (ピロリ〜ン✨)
+  // 正解チャイム (ピロリ〜ン✨)
   playCorrect() {
     if (!this.enabled) return;
     this.init();
@@ -89,6 +95,26 @@ class SoundManager {
     });
   }
 
+  // ドラッグで持ち上げた時の音 (フワッ)
+  playPickup() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(280, t);
+    osc.frequency.exponentialRampToValueAtTime(480, t + 0.08);
+    gain.gain.setValueAtTime(0.18, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.1);
+  }
+
   // ヒント表示音 (ポンッ)
   playHint() {
     if (!this.enabled) return;
@@ -109,28 +135,27 @@ class SoundManager {
     osc.stop(t + 0.15);
   }
 
-  // 不正解音 (ブッブー)
+  // 不正解・ドロップ失敗音 (ポヨン)
   playWrong() {
     if (!this.enabled) return;
     this.init();
     if (!this.ctx) return;
 
     const t = this.ctx.currentTime;
-    [0, 0.12].forEach((offset) => {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(160, t + offset);
-      gain.gain.setValueAtTime(0.2, t + offset);
-      gain.gain.exponentialRampToValueAtTime(0.01, t + offset + 0.09);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start(t + offset);
-      osc.stop(t + offset + 0.09);
-    });
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(220, t);
+    osc.frequency.exponentialRampToValueAtTime(110, t + 0.18);
+    gain.gain.setValueAtTime(0.2, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.2);
   }
 
-  // 地方/大陸コンプリートファンファーレ！
+  // コンプリートファンファーレ！
   playFanfare() {
     if (!this.enabled) return;
     this.init();
@@ -138,14 +163,14 @@ class SoundManager {
 
     const t = this.ctx.currentTime;
     const melody = [
-      { f: 523.25, d: 0.12 }, // C
-      { f: 523.25, d: 0.12 }, // C
-      { f: 523.25, d: 0.12 }, // C
-      { f: 659.25, d: 0.35 }, // E
-      { f: 587.33, d: 0.12 }, // D
-      { f: 659.25, d: 0.12 }, // E
-      { f: 783.99, d: 0.45 }, // G
-      { f: 1046.5, d: 0.6 }   // C6
+      { f: 523.25, d: 0.12 },
+      { f: 523.25, d: 0.12 },
+      { f: 523.25, d: 0.12 },
+      { f: 659.25, d: 0.35 },
+      { f: 587.33, d: 0.12 },
+      { f: 659.25, d: 0.12 },
+      { f: 783.99, d: 0.45 },
+      { f: 1046.5, d: 0.6 }
     ];
 
     let curr = t;
@@ -162,6 +187,19 @@ class SoundManager {
       osc.stop(curr + note.d);
       curr += note.d + 0.02;
     });
+  }
+
+  // Web Speech API による音声読み上げ (暗記効果を倍増！)
+  speakName(text) {
+    if (!this.voiceEnabled) return;
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel(); // 前の音声をキャンセル
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "ja-JP";
+      utter.rate = 1.05; // テンポ良く
+      utter.pitch = 1.1; // 明るい声
+      window.speechSynthesis.speak(utter);
+    }
   }
 
   // BGM トグル
@@ -195,7 +233,6 @@ class SoundManager {
   _scheduleBGMStep() {
     if (!this.bgmPlaying || !this.ctx) return;
 
-    // 心地よいクラフト風アルペジオ (Cメジャーペンタトニック)
     const melody = [
       261.63, 329.63, 392.00, 523.25,
       392.00, 329.63, 261.63, 196.00,
@@ -211,7 +248,7 @@ class SoundManager {
     const gain = this.ctx.createGain();
     osc.type = "sine";
     osc.frequency.setValueAtTime(freq, t);
-    gain.gain.setValueAtTime(0.04, t);
+    gain.gain.setValueAtTime(0.035, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
     osc.connect(gain);
     gain.connect(this.ctx.destination);

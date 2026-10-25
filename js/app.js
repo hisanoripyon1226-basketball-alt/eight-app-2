@@ -6,6 +6,7 @@ class MapCraftApp {
     this.map3d = null;
     this.currentMode = "japan"; // "japan" | "world"
     this.currentRegionId = "hokkaido_tohoku";
+    this.currentDifficulty = "easy"; // "easy" | "normal" | "hard"
 
     this.allData = {
       japan: JAPAN_PREFECTURES,
@@ -17,27 +18,31 @@ class MapCraftApp {
       world: WORLD_REGIONS
     };
 
-    // 各アイテムの配置状態保持 (id -> boolean)
     this.placedState = new Map();
-
-    // タイムアタック＆統計
     this.startTime = null;
     this.timerInterval = null;
     this.elapsedSeconds = 0;
     this.hintUsedCount = 0;
 
-    // 設定
     this.showRuby = true;
+
+    // シルエット特訓用状態
+    this.silhouetteScore = 0;
+    this.silhouetteTotal = 10;
+    this.silhouetteCurrent = 0;
+    this.silhouetteTargetItem = null;
 
     this.init();
   }
 
-  init() {
-    // 3Dワールド初期化
+  async init() {
     this.map3d = new MapCraft3D("canvas-container");
-    this.map3d.onSlotClick = (data, isPlaced) => this.handleSlotClick(data, isPlaced);
 
-    // UI要素のイベントバインド
+    // 3Dイベントのハンドリング
+    this.map3d.onSlotClick = (item) => this.handleSlotHintClick(item);
+    this.map3d.onPieceGrab = (item) => this.showShapeZoom(item);
+    this.map3d.onPiecePlaced = (item) => this.handlePiecePlaced(item);
+
     this.bindUIEvents();
 
     // 初期ステージ読み込み
@@ -45,17 +50,21 @@ class MapCraftApp {
   }
 
   bindUIEvents() {
-    // モード切替タブ (日本 / 世界)
+    // モード切替タブ (日本地図 / リアル地球儀 / シルエット特訓)
     const modeTabs = document.querySelectorAll(".mode-tab");
     modeTabs.forEach((tab) => {
       tab.addEventListener("click", () => {
         const mode = tab.dataset.mode;
-        if (mode === this.currentMode) return;
         modeTabs.forEach((t) => t.classList.remove("active"));
         tab.classList.add("active");
 
-        const initialRegion = mode === "japan" ? "hokkaido_tohoku" : "asia";
-        this.switchMode(mode, initialRegion);
+        if (mode === "quiz") {
+          this.startSilhouetteQuiz();
+        } else {
+          document.getElementById("modal-silhouette-quiz").classList.remove("active");
+          const initialRegion = mode === "japan" ? "hokkaido_tohoku" : "asia";
+          this.switchMode(mode, initialRegion);
+        }
       });
     });
 
@@ -67,6 +76,15 @@ class MapCraftApp {
       });
     }
 
+    // 難易度セレクター (入門・中級・達人)
+    const diffSelect = document.getElementById("difficulty-select");
+    if (diffSelect) {
+      diffSelect.addEventListener("change", (e) => {
+        this.currentDifficulty = e.target.value;
+        this.loadRegion(this.currentRegionId);
+      });
+    }
+
     // サウンド切り替えボタン
     const soundBtn = document.getElementById("btn-sound");
     if (soundBtn) {
@@ -74,6 +92,16 @@ class MapCraftApp {
         const isEnabled = window.soundManager.toggleSound();
         soundBtn.innerHTML = isEnabled ? "🔊 サウンド: ON" : "🔇 サウンド: OFF";
         soundBtn.classList.toggle("btn-active", isEnabled);
+      });
+    }
+
+    // 音声読み上げボタン
+    const voiceBtn = document.getElementById("btn-voice");
+    if (voiceBtn) {
+      voiceBtn.addEventListener("click", () => {
+        const isVoice = window.soundManager.toggleVoice();
+        voiceBtn.innerHTML = isVoice ? "🗣️ 音声読上: ON" : "🗣️ 音声読上: OFF";
+        voiceBtn.classList.toggle("btn-active", isVoice);
       });
     }
 
@@ -118,7 +146,7 @@ class MapCraftApp {
       });
     }
 
-    // ヒントモーダルの閉じるボタン
+    // ヒントモーダル閉じるボタン
     const closeHintBtn = document.getElementById("btn-close-hint");
     const hintModal = document.getElementById("modal-hint");
     if (closeHintBtn && hintModal) {
@@ -128,23 +156,29 @@ class MapCraftApp {
       });
     }
 
-    // コンプリートモーダルの閉じるボタン
+    // コンプリートモーダル閉じるボタン
     const closeCompBtn = document.getElementById("btn-close-complete");
     const compModal = document.getElementById("modal-complete");
     if (closeCompBtn && compModal) {
       closeCompBtn.addEventListener("click", () => compModal.classList.remove("active"));
     }
+
+    // シルエット特訓モーダル閉じる
+    const closeQuizBtn = document.getElementById("btn-close-quiz");
+    const quizModal = document.getElementById("modal-silhouette-quiz");
+    if (closeQuizBtn && quizModal) {
+      closeQuizBtn.addEventListener("click", () => {
+        quizModal.classList.remove("active");
+        // 日本地図タブへ戻す
+        document.querySelector('.mode-tab[data-mode="japan"]').click();
+      });
+    }
   }
 
-  // モード切り替え (日本地図 / 世界地図)
   switchMode(mode, regionId) {
     this.currentMode = mode;
     this.currentRegionId = regionId;
-
-    // 地域ドロップダウン更新
     this.populateRegionSelect();
-
-    // 該当地域の読み込み
     this.loadRegion(regionId);
   }
 
@@ -164,14 +198,9 @@ class MapCraftApp {
     });
   }
 
-  // 地域の読み込み
   loadRegion(regionId) {
     this.currentRegionId = regionId;
 
-    const regionSelect = document.getElementById("region-select");
-    if (regionSelect) regionSelect.value = regionId;
-
-    // 該当アイテムの抽出
     const allItems = this.allData[this.currentMode];
     let items;
     if (regionId === "all") {
@@ -180,101 +209,107 @@ class MapCraftApp {
       items = allItems.filter((item) => item.region === regionId);
     }
 
-    // 状態リセット
     this.placedState.clear();
     items.forEach((item) => this.placedState.set(item.id, false));
 
-    // 3Dステージ再生成
-    this.map3d.loadStage(this.currentMode, regionId, items);
+    // 3Dステージ再生成 (難易度レベルを渡す)
+    this.map3d.loadStage(this.currentMode, regionId, items, this.currentDifficulty);
 
-    // インベントリトレイの更新
     this.renderInventory(items);
-
-    // 進捗表示の更新
     this.updateProgress();
-
-    // タイマーリセット＆スタート
     this.startTimer();
   }
 
-  // インベントリ（手持ちピース一覧）の描画
   renderInventory(items) {
     const container = document.getElementById("inventory-items");
     if (!container) return;
-
     container.innerHTML = "";
 
-    // 未配置のピースをシャッフルまたは表示
     items.forEach((item) => {
       const card = document.createElement("div");
       card.className = "inventory-card";
       card.id = `inv-card-${item.id}`;
       card.dataset.id = item.id;
 
-      const flagOrIcon = item.specialtyIcons ? item.specialtyIcons[0] : (item.flag || "📍");
-      const subInfo = this.currentMode === "japan" ? `庁: ${item.capital}` : `首: ${item.capital}`;
+      // リアルなSVGシルエットをサムネイルに描画！
+      let shapeSvg = "";
+      if (this.currentMode === "japan" && window.geoUtils) {
+        shapeSvg = window.geoUtils.generatePrefectureSVG(item.name, 48, "#63b3ed");
+      } else {
+        shapeSvg = `<span style="font-size: 2rem;">${item.flag || "📍"}</span>`;
+      }
 
       card.innerHTML = `
-        <div class="card-icon">${flagOrIcon}</div>
+        <div class="card-shape-preview">${shapeSvg}</div>
         <div class="card-text">
           <ruby class="card-name">${item.name}<rt>${item.kana || item.nameEn || ""}</rt></ruby>
-          <div class="card-capital">${subInfo}</div>
         </div>
       `;
 
+      // クリックで該当スロットにスナップ（アシスト機能）
       card.addEventListener("click", () => {
-        this.selectInventoryItem(item);
+        if (this.placedState.get(item.id)) return;
+        this.showShapeZoom(item);
+        this.map3d.snapPieceToSlot(item.id);
       });
 
       container.appendChild(card);
     });
   }
 
-  // インベントリのアイテムをクリックしたときの処理
-  selectInventoryItem(item) {
-    if (this.placedState.get(item.id)) return; // 既に配置済み
+  // ピースを掴んだ時にリアルタイムで表示する「🔍 形状ズームビューア」
+  showShapeZoom(item) {
+    const viewer = document.getElementById("shape-zoom-viewer");
+    if (!viewer) return;
 
-    // 地図上の該当スロットへカメラ移動してクラフト
-    this.map3d.focusSlot(item.id);
+    const svgContainer = document.getElementById("zoom-shape-svg");
+    const nameEl = document.getElementById("zoom-shape-name");
+    const hintEl = document.getElementById("zoom-shape-hint");
 
-    // クラフト実行
-    this.executeCraft(item.id);
+    let svgStr = "";
+    if (this.currentMode === "japan" && window.geoUtils) {
+      svgStr = window.geoUtils.generatePrefectureSVG(item.name, 160, item.color || "#38a169");
+    } else {
+      svgStr = `<div style="font-size: 5rem; text-align: center;">${item.flag || "📍"}</div>`;
+    }
+
+    svgContainer.innerHTML = svgStr;
+    nameEl.innerHTML = `<ruby>${item.name}<rt>${item.kana || item.nameEn || ""}</rt></ruby>`;
+    hintEl.textContent = `💡 形の特徴: ${item.shapeHint || "独特なシルエットだよ！"}`;
+
+    viewer.classList.add("active");
+
+    // 4秒後に自動フェードアウト（長押し中はキープ）
+    if (this.zoomTimer) clearTimeout(this.zoomTimer);
+    this.zoomTimer = setTimeout(() => {
+      viewer.classList.remove("active");
+    }, 4500);
   }
 
-  // 3Dスロットがクリックされた時の処理
-  handleSlotClick(data, isPlaced) {
+  // 「？」ピンをクリックした時のヒントモーダル
+  // ★重要★ ユーザーの要望通り、答え（県名・国名・3択ボタン）は絶対に伏せ、ヒント情報のみ表示する！
+  handleSlotHintClick(item) {
     if (window.soundManager) window.soundManager.playHint();
-
     this.hintUsedCount++;
 
-    if (isPlaced) {
-      // 既に配置済み：図鑑（ずかん）カードとして表示
-      this.openZukanModal(data);
-    } else {
-      // 未配置：ヒントウィンドウを表示して、ここにはめるピースを選ばせる！
-      this.openHintModal(data);
-    }
-  }
-
-  // ヒントモーダルを表示 (空白スロットのクリック時)
-  openHintModal(data) {
     const modal = document.getElementById("modal-hint");
     if (!modal) return;
 
+    // 地方バッジ
     document.getElementById("hint-region-badge").textContent =
-      this.currentMode === "japan" ? JAPAN_REGIONS[data.region]?.name : WORLD_REGIONS[data.region]?.name;
+      this.currentMode === "japan" ? JAPAN_REGIONS[item.region]?.name : WORLD_REGIONS[item.region]?.name;
 
-    // 首都・県庁所在地
+    // 県庁所在地 / 首都 (県名は出さない！)
     const capTitle = this.currentMode === "japan" ? "県庁所在地" : "首都";
     document.getElementById("hint-capital-title").textContent = `🏛️ ${capTitle}`;
-    document.getElementById("hint-capital-value").textContent = data.capital + (data.capitalKana ? ` (${data.capitalKana})` : "");
+    document.getElementById("hint-capital-value").textContent = item.capital + (item.capitalKana ? ` (${item.capitalKana})` : "");
 
-    // 特産品・名物
+    // 代表的な特産品
     const specContainer = document.getElementById("hint-specialties");
     specContainer.innerHTML = "";
-    if (data.specialties) {
-      data.specialties.forEach((spec, idx) => {
-        const icon = data.specialtyIcons ? data.specialtyIcons[idx] || "✨" : "✨";
+    if (item.specialties) {
+      item.specialties.forEach((spec, idx) => {
+        const icon = item.specialtyIcons ? item.specialtyIcons[idx] || "✨" : "✨";
         const badge = document.createElement("span");
         badge.className = "hint-badge";
         badge.innerHTML = `<span class="badge-icon">${icon}</span> ${spec}`;
@@ -285,120 +320,47 @@ class MapCraftApp {
     // 名所・シンボル
     const landContainer = document.getElementById("hint-landmarks");
     landContainer.innerHTML = "";
-    if (data.landmarks) {
-      data.landmarks.forEach((land) => {
+    if (item.landmarks) {
+      item.landmarks.forEach((land) => {
         const badge = document.createElement("span");
         badge.className = "hint-badge landmark-badge";
         badge.innerHTML = `🏯 ${land}`;
         landContainer.appendChild(badge);
       });
     }
+
+    // 形状の特徴ヒント
+    document.getElementById("hint-shape-desc").textContent = item.shapeHint || "特徴的な形をよく観察してみよう！";
 
     // 豆知識ヒント
-    document.getElementById("hint-trivia-text").textContent = data.trivia || "";
+    document.getElementById("hint-trivia-text").textContent = item.trivia || "";
 
-    // 選択肢候補ボタンを生成 (正解＋ランダム2つの3択クイズ！)
-    const choicesContainer = document.getElementById("hint-choices");
-    choicesContainer.innerHTML = "";
-
-    const candidatePool = this.allData[this.currentMode].filter((i) => i.id !== data.id);
-    const shuffledPool = [...candidatePool].sort(() => Math.random() - 0.5);
-    const choices = [data, shuffledPool[0], shuffledPool[1]].sort(() => Math.random() - 0.5);
-
-    choices.forEach((choice) => {
-      const btn = document.createElement("button");
-      btn.className = "btn-craft-choice";
-      const icon = choice.specialtyIcons ? choice.specialtyIcons[0] : (choice.flag || "📍");
-      btn.innerHTML = `<span class="choice-icon">${icon}</span> <strong>${choice.name}</strong> をクラフト！`;
-
-      btn.addEventListener("click", () => {
-        if (choice.id === data.id) {
-          // 正解！
-          modal.classList.remove("active");
-          this.executeCraft(data.id);
-        } else {
-          // 不正解！
-          if (window.soundManager) window.soundManager.playWrong();
-          btn.classList.add("btn-wrong");
-          btn.innerHTML = `❌ ちがうよ！（${choice.name}ではありません）`;
-          setTimeout(() => {
-            btn.classList.remove("btn-wrong");
-            btn.innerHTML = `<span class="choice-icon">${icon}</span> <strong>${choice.name}</strong> をクラフト！`;
-          }, 1200);
-        }
-      });
-
-      choicesContainer.appendChild(btn);
-    });
+    // ★重要★ 選択肢ボタンは出さず、探してドラッグするよう案内！
+    const guideBox = document.getElementById("hint-choices");
+    guideBox.innerHTML = `
+      <div class="drag-guide-box">
+        <div class="guide-icon">🎯</div>
+        <div class="guide-text">
+          <strong>このヒントから都道府県・国を推理しよう！</strong><br>
+          下のピーストレイから正しい形のピースを探して、この場所にドラッグ＆ドロップしてね！
+        </div>
+      </div>
+    `;
 
     modal.classList.add("active");
   }
 
-  // 図鑑モーダル（配置済みブロックをクリックしたときの詳細情報）
-  openZukanModal(data) {
-    const modal = document.getElementById("modal-hint");
-    if (!modal) return;
+  // ピース配置成功時
+  handlePiecePlaced(item) {
+    this.placedState.set(item.id, true);
 
-    document.getElementById("hint-region-badge").textContent = "📖 クラフト完成ずかん";
-    const capTitle = this.currentMode === "japan" ? "県庁所在地" : "首都";
-    document.getElementById("hint-capital-title").textContent = `🏛️ ${capTitle}`;
-    document.getElementById("hint-capital-value").textContent = `${data.name}（${data.capital}）`;
+    const card = document.getElementById(`inv-card-${item.id}`);
+    if (card) card.classList.add("placed");
 
-    // 特産品
-    const specContainer = document.getElementById("hint-specialties");
-    specContainer.innerHTML = "";
-    if (data.specialties) {
-      data.specialties.forEach((spec, idx) => {
-        const icon = data.specialtyIcons ? data.specialtyIcons[idx] || "✨" : "✨";
-        const badge = document.createElement("span");
-        badge.className = "hint-badge";
-        badge.innerHTML = `<span class="badge-icon">${icon}</span> ${spec}`;
-        specContainer.appendChild(badge);
-      });
-    }
-
-    // 名所
-    const landContainer = document.getElementById("hint-landmarks");
-    landContainer.innerHTML = "";
-    if (data.landmarks) {
-      data.landmarks.forEach((land) => {
-        const badge = document.createElement("span");
-        badge.className = "hint-badge landmark-badge";
-        badge.innerHTML = `🏯 ${land}`;
-        landContainer.appendChild(badge);
-      });
-    }
-
-    // 豆知識
-    document.getElementById("hint-trivia-text").textContent = `【解説】${data.trivia}`;
-
-    // ボタン欄は「完成済み」表示
-    const choicesContainer = document.getElementById("hint-choices");
-    choicesContainer.innerHTML = `<div class="completed-badge">✅ クラフト済み！この場所は完成しているよ！</div>`;
-
-    modal.classList.add("active");
+    this.updateProgress();
+    this.checkCompletion();
   }
 
-  // クラフトを実行する
-  executeCraft(id) {
-    if (this.placedState.get(id)) return;
-
-    this.placedState.set(id, true);
-
-    // インベントリのカードを配置済みにマーク
-    const card = document.getElementById(`inv-card-${id}`);
-    if (card) {
-      card.classList.add("placed");
-    }
-
-    // 3Dアニメーション
-    this.map3d.craftPiece(id, () => {
-      this.updateProgress();
-      this.checkCompletion();
-    });
-  }
-
-  // 進捗状況の更新
   updateProgress() {
     const total = this.placedState.size;
     let placed = 0;
@@ -407,7 +369,6 @@ class MapCraftApp {
     });
 
     const percent = total > 0 ? Math.round((placed / total) * 100) : 0;
-
     const progressFill = document.getElementById("progress-fill");
     const progressText = document.getElementById("progress-text");
 
@@ -415,7 +376,6 @@ class MapCraftApp {
     if (progressText) progressText.textContent = `${placed} / ${total} 完成 (${percent}%)`;
   }
 
-  // コンプリート判定
   checkCompletion() {
     let allDone = true;
     this.placedState.forEach((val) => {
@@ -425,59 +385,116 @@ class MapCraftApp {
     if (allDone) {
       this.stopTimer();
 
-      // ファンファーレ音
-      if (window.soundManager) window.soundManager.playFanfare();
-
-      // 紙吹雪エフェクト (canvas-confetti がある場合)
-      if (typeof confetti === "function") {
-        confetti({
-          particleCount: 120,
-          spread: 80,
-          origin: { y: 0.6 }
-        });
-        setTimeout(() => {
-          confetti({
-            particleCount: 80,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 }
-          });
-          confetti({
-            particleCount: 80,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 }
-          });
-        }, 300);
+      if (window.soundManager) {
+        window.soundManager.playFanfare();
+        window.soundManager.speakName("おめでとうございます！すべてのピースが完成しました！完璧です！");
       }
 
-      // 星評価計算
-      const total = this.placedState.size;
-      let stars = 3;
-      if (this.hintUsedCount > total * 2) stars = 1;
-      else if (this.hintUsedCount > total) stars = 2;
+      if (typeof confetti === "function") {
+        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+      }
 
-      const starStr = "⭐".repeat(stars) + "☆".repeat(3 - stars);
-
-      // モーダル表示
       const regionName = this.regionDefs[this.currentMode][this.currentRegionId]?.name;
       document.getElementById("comp-region-name").textContent = regionName;
       document.getElementById("comp-time").textContent = this.formatTime(this.elapsedSeconds);
       document.getElementById("comp-hints").textContent = `${this.hintUsedCount} 回`;
-      document.getElementById("comp-stars").textContent = starStr;
 
       const modal = document.getElementById("modal-complete");
       if (modal) modal.classList.add("active");
     }
   }
 
-  // タイマー管理
+  // ==========================================
+  // ⚡ 新機能：シルエット特訓ミニゲーム
+  // ==========================================
+  startSilhouetteQuiz() {
+    this.silhouetteScore = 0;
+    this.silhouetteCurrent = 0;
+    this.silhouetteTotal = 10;
+
+    const modal = document.getElementById("modal-silhouette-quiz");
+    modal.classList.add("active");
+
+    this.nextSilhouetteQuestion();
+  }
+
+  nextSilhouetteQuestion() {
+    if (this.silhouetteCurrent >= this.silhouetteTotal) {
+      // 終了
+      this.showQuizResult();
+      return;
+    }
+
+    this.silhouetteCurrent++;
+    document.getElementById("quiz-step").textContent = `${this.silhouetteCurrent} / ${this.silhouetteTotal} 問目`;
+    document.getElementById("quiz-score-badge").textContent = `スコア: ${this.silhouetteScore}`;
+
+    // ランダムに1つ正解を選ぶ
+    const all = JAPAN_PREFECTURES;
+    const target = all[Math.floor(Math.random() * all.length)];
+    this.silhouetteTargetItem = target;
+
+    // シルエットSVGを描画 (黒い漆黒のシルエット！)
+    const svgStr = window.geoUtils.generatePrefectureSVG(target.name, 220, "#1a202c");
+    document.getElementById("quiz-silhouette-view").innerHTML = svgStr;
+
+    // 誤答2つを選出
+    const pool = all.filter((i) => i.id !== target.id);
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    const choices = [target, shuffled[0], shuffled[1]].sort(() => Math.random() - 0.5);
+
+    const container = document.getElementById("quiz-choices-container");
+    container.innerHTML = "";
+
+    choices.forEach((choice) => {
+      const btn = document.createElement("button");
+      btn.className = "quiz-choice-btn";
+      btn.innerHTML = `<ruby>${choice.name}<rt>${choice.kana}</rt></ruby>`;
+
+      btn.addEventListener("click", () => {
+        if (choice.id === target.id) {
+          // 正解！
+          this.silhouetteScore++;
+          if (window.soundManager) {
+            window.soundManager.playCorrect();
+            window.soundManager.speakName(`正解！${target.name}！`);
+          }
+          btn.classList.add("btn-correct");
+          setTimeout(() => this.nextSilhouetteQuestion(), 800);
+        } else {
+          // 不正解
+          if (window.soundManager) {
+            window.soundManager.playWrong();
+            window.soundManager.speakName(`ちがうよ、これは${target.name}だよ！`);
+          }
+          btn.classList.add("btn-wrong");
+          setTimeout(() => this.nextSilhouetteQuestion(), 1100);
+        }
+      });
+      container.appendChild(btn);
+    });
+  }
+
+  showQuizResult() {
+    const container = document.getElementById("quiz-choices-container");
+    const view = document.getElementById("quiz-silhouette-view");
+    view.innerHTML = `<div style="font-size: 5rem;">🏆</div>`;
+    document.getElementById("quiz-step").textContent = "特訓完了！";
+    container.innerHTML = `
+      <div style="text-align: center; padding: 16px;">
+        <h3 style="font-size: 1.5rem; margin-bottom: 8px;">あなたのスコア: ${this.silhouetteScore} / ${this.silhouetteTotal} 点</h3>
+        <p style="color: #4a5568; margin-bottom: 16px;">${this.silhouetteScore === 10 ? "全問正解！完璧なシルエットマスターです！" : "何度も挑戦して日本全国の形を完璧に覚えよう！"}</p>
+        <button id="btn-quiz-retry" class="btn-primary-craft">もう一度特訓する！</button>
+      </div>
+    `;
+    document.getElementById("btn-quiz-retry").addEventListener("click", () => this.startSilhouetteQuiz());
+  }
+
   startTimer() {
     this.stopTimer();
     this.elapsedSeconds = 0;
     this.hintUsedCount = 0;
     this.startTime = Date.now();
-
     const timerEl = document.getElementById("timer-display");
     if (timerEl) timerEl.textContent = "⏱️ 00:00";
 
@@ -501,7 +518,6 @@ class MapCraftApp {
   }
 }
 
-// 起動
 window.addEventListener("DOMContentLoaded", () => {
   window.app = new MapCraftApp();
 });

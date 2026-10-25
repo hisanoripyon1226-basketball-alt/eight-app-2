@@ -72,6 +72,7 @@ const JAPAN_PREFECTURES = [
   // --- 北海道・東北 ---
   {
     id: "hokkaido",
+    shapeHint: "ひし形の巨大なシルエット！カニが両手を広げたような日本最大の形",
     name: "北海道",
     kana: "ほっかいどう",
     capital: "札幌市",
@@ -87,6 +88,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "aomori",
+    shapeHint: "本州最北端！津軽半島と下北半島がクワガタのハサミのように突き出た形",
     name: "青森県",
     kana: "あおもりけん",
     capital: "青森市",
@@ -102,6 +104,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "iwate",
+    shapeHint: "本州で最も広い県！東側の三陸海岸がギザギザした大きな縦長の形",
     name: "岩手県",
     kana: "いわてけん",
     capital: "盛岡市",
@@ -117,6 +120,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "akita",
+    shapeHint: "日本海側で西に男鹿（おが）半島がちょこんと突き出た形",
     name: "秋田県",
     kana: "あきたけん",
     capital: "秋田市",
@@ -132,6 +136,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "miyagi",
+    shapeHint: "太平洋側に牡鹿（おしか）半島が突き出た三角形に近い形",
     name: "宮城県",
     kana: "みやぎけん",
     capital: "仙台市",
@@ -147,6 +152,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "yamagata",
+    shapeHint: "人の横顔（左を向いた顔）のシルエットにそっくりな形！",
     name: "山形県",
     kana: "やまがたけん",
     capital: "山形市",
@@ -162,6 +168,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "fukushima",
+    shapeHint: "東北最南端！大きな台形のような形で、太平洋に面している",
     name: "福島県",
     kana: "ふくしまけん",
     capital: "福島市",
@@ -179,6 +186,7 @@ const JAPAN_PREFECTURES = [
   // --- 関東地方 ---
   {
     id: "ibaraki",
+    shapeHint: "東側がまっすぐ太平洋に面し、南に霞ヶ浦を抱える形",
     name: "茨城県",
     kana: "いばらきけん",
     capital: "水戸市",
@@ -194,6 +202,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "tochigi",
+    shapeHint: "海のない内陸県！いちごのような三角おにぎり型",
     name: "栃木県",
     kana: "とちぎけん",
     capital: "宇都宮市",
@@ -209,6 +218,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "gunma",
+    shapeHint: "『ツル舞う形の群馬県』！上毛かるたでも超有名なツルの姿",
     name: "群馬県",
     kana: "ぐんまけん",
     capital: "前橋市",
@@ -224,6 +234,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "saitama",
+    shapeHint: "古代の勾玉（まがたま）のような形をした東京の北の内陸県",
     name: "埼玉県",
     kana: "さいたまけん",
     capital: "さいたま市",
@@ -239,6 +250,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "chiba",
+    shapeHint: "太平洋に大きく突き出た房総半島！マスコット『チーバくん』の形そのもの",
     name: "千葉県",
     kana: "ちばけん",
     capital: "千葉市",
@@ -254,6 +266,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "tokyo",
+    shapeHint: "西側に山地が細長く伸び、東側に東京湾を抱える形",
     name: "東京都",
     kana: "とうきょうと",
     capital: "新宿区",
@@ -269,6 +282,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "kanagawa",
+    shapeHint: "三浦半島が南東に突き出し、相模湾を包み込む形",
     name: "神奈川県",
     kana: "かながわけん",
     capital: "横浜市",
@@ -286,6 +300,7 @@ const JAPAN_PREFECTURES = [
   // --- 中部地方 ---
   {
     id: "niigata",
+    shapeHint: "日本海に沿って北東から南西へ長く伸び、佐渡島を抱える形",
     name: "新潟県",
     kana: "にいがたけん",
     capital: "新潟市",
@@ -301,6 +316,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "toyama",
+    shapeHint: "すり鉢状の富山湾を丸く囲む、アルプスを背負った形",
     name: "富山県",
     kana: "とやまけん",
     capital: "富山市",
@@ -316,6 +332,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "ishikawa",
+    shapeHint: "日本海へ力強く突き出た能登半島が誰が見ても一目でわかる形！",
     name: "石川県",
     kana: "いしかわけん",
     capital: "金沢市",
@@ -331,6 +348,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "fukui",
+    shapeHint: "若狭湾の複雑な海岸線が西へと細長く伸びるメガネのような形",
     name: "福井県",
     kana: "ふくいけん",
     capital: "福井市",
@@ -346,6 +364,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "yamanashi",
+    shapeHint: "富士山の北側に位置し、四方を山に囲まれた内陸の形",
     name: "山梨県",
     kana: "やまなしけん",
     capital: "甲府市",
@@ -361,6 +380,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "nagano",
+    shapeHint: "日本の屋根！アルプス山脈を抱え、タツノオトシゴのように南北に長い形",
     name: "長野県",
     kana: "ながのけん",
     capital: "長野市",
@@ -376,6 +396,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "gifu",
+    shapeHint: "本州のほぼ中央！北の飛騨山脈と南の濃尾平野が合わさった形",
     name: "岐阜県",
     kana: "ぎふけん",
     capital: "岐阜市",
@@ -391,6 +412,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "shizuoka",
+    shapeHint: "富士山の南側！伊豆半島と御前崎があり、金魚が泳ぐようなシルエット",
     name: "静岡県",
     kana: "しずおかけん",
     capital: "静岡市",
@@ -406,6 +428,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "aichi",
+    shapeHint: "知多半島と渥美半島の2本の半島がカニのハサミのように伸びる形",
     name: "愛知県",
     kana: "あいちけん",
     capital: "名古屋市",
@@ -423,6 +446,7 @@ const JAPAN_PREFECTURES = [
   // --- 近畿地方 ---
   {
     id: "mie",
+    shapeHint: "紀伊半島の東側！伊勢湾とリアス海岸に沿って南北に細長い形",
     name: "三重県",
     kana: "みえけん",
     capital: "津市",
@@ -438,6 +462,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "shiga",
+    shapeHint: "真ん中に日本一の湖『琵琶湖』がぽっかり空いているドーナツ型",
     name: "滋賀県",
     kana: "しがけん",
     capital: "大津市",
@@ -453,6 +478,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "kyoto",
+    shapeHint: "日本海側の丹後半島から内陸の古都まで細長く伸びる形",
     name: "京都府",
     kana: "きょうとふ",
     capital: "京都市",
@@ -468,6 +494,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "osaka",
+    shapeHint: "大阪湾を三日月のように包み込む、日本で2番目に小さい府の形",
     name: "大阪府",
     kana: "おおさかふ",
     capital: "大阪市",
@@ -483,6 +510,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "hyogo",
+    shapeHint: "北は日本海、南は瀬戸内海の両方に面し、淡路島を持つ形",
     name: "兵庫県",
     kana: "ひょうごけん",
     capital: "神戸市",
@@ -498,6 +526,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "nara",
+    shapeHint: "海のない内陸県で、吉野の山々が南に広がる形",
     name: "奈良県",
     kana: "ならけん",
     capital: "奈良市",
@@ -513,6 +542,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "wakayama",
+    shapeHint: "紀伊半島の南側をまるごと占める、太平洋に突き出た大きな形",
     name: "和歌山県",
     kana: "わかやまけん",
     capital: "和歌山市",
@@ -530,6 +560,7 @@ const JAPAN_PREFECTURES = [
   // --- 中国地方 ---
   {
     id: "tottori",
+    shapeHint: "中国地方の北東部！日本海に沿って東西に細長く伸びる形",
     name: "鳥取県",
     kana: "とっとりけん",
     capital: "鳥取市",
@@ -545,6 +576,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "shimane",
+    shapeHint: "日本海に沿って弓なりに細長く伸び、隠岐諸島を持つ形",
     name: "島根県",
     kana: "しまねけん",
     capital: "松江市",
@@ -560,6 +592,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "okayama",
+    shapeHint: "瀬戸内海に面し、北の中国山地から南の海へ広がる形",
     name: "岡山県",
     kana: "おかやまけん",
     capital: "岡山市",
@@ -575,6 +608,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "hiroshima",
+    shapeHint: "瀬戸内海の真ん中！多くの島々を抱える三角形に近い形",
     name: "広島県",
     kana: "ひろしまけん",
     capital: "広島市",
@@ -590,6 +624,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "yamaguchi",
+    shapeHint: "本州の西の終点！三方を海に囲まれた半島のような形",
     name: "山口県",
     kana: "やまぐちけん",
     capital: "山口市",
@@ -607,6 +642,7 @@ const JAPAN_PREFECTURES = [
   // --- 四国地方 ---
   {
     id: "tokushima",
+    shapeHint: "四国の東の玄関口！紀伊水道に面し鳴門海峡を持つ形",
     name: "徳島県",
     kana: "とくしまけん",
     capital: "徳島市",
@@ -622,6 +658,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "kagawa",
+    shapeHint: "日本一面積が小さい！瀬戸内海に浮かぶおむすびのような可愛い形",
     name: "香川県",
     kana: "かがわけん",
     capital: "高松市",
@@ -637,6 +674,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "ehime",
+    shapeHint: "佐田岬半島が九州に向かって細長くツンと突き出た形",
     name: "愛媛県",
     kana: "えひめけん",
     capital: "松山市",
@@ -652,6 +690,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "kochi",
+    shapeHint: "四国の南半分！太平洋を扇形に大きく抱きかかえるカツオのような形",
     name: "高知県",
     kana: "こうちけん",
     capital: "高知市",
@@ -669,6 +708,7 @@ const JAPAN_PREFECTURES = [
   // --- 九州・沖縄地方 ---
   {
     id: "fukuoka",
+    shapeHint: "九州の北端！玄界灘と周防灘に面した九州の玄関口の形",
     name: "福岡県",
     kana: "ふくおかけん",
     capital: "福岡市",
@@ -684,6 +724,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "saga",
+    shapeHint: "有田焼の産地！玄界灘と有明海の両方に挟まれたコンパクトな形",
     name: "佐賀県",
     kana: "さがけん",
     capital: "佐賀市",
@@ -699,6 +740,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "nagasaki",
+    shapeHint: "日本一島が多い！無数の島々と複雑に入り組んだリアス海岸の形",
     name: "長崎県",
     kana: "ながさきけん",
     capital: "長崎市",
@@ -714,6 +756,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "kumamoto",
+    shapeHint: "九州の中央！有明海に面し天草諸島が連なる形",
     name: "熊本県",
     kana: "くまもとけん",
     capital: "熊本市",
@@ -729,6 +772,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "oita",
+    shapeHint: "別府湾を持ち、国東（くにさき）半島が丸く突き出た形",
     name: "大分県",
     kana: "おおいたけん",
     capital: "大分市",
@@ -744,6 +788,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "miyazaki",
+    shapeHint: "日向灘に面して南北にまっすぐ長く伸びる南国の形",
     name: "宮崎県",
     kana: "みやざきけん",
     capital: "宮崎市",
@@ -759,6 +804,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "kagoshima",
+    shapeHint: "薩摩半島と大隅半島の2つの大きな半島が桜島を挟む形",
     name: "鹿児島県",
     kana: "かごしまけん",
     capital: "鹿児島市",
@@ -774,6 +820,7 @@ const JAPAN_PREFECTURES = [
   },
   {
     id: "okinawa",
+    shapeHint: "エメラルドグリーンの海に細長く連なる美しい島々の形",
     name: "沖縄県",
     kana: "おきなわけん",
     capital: "那覇市",

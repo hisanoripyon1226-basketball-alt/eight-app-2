@@ -1,4 +1,4 @@
-/* 地図クラフト - MapCraft 3D スタイルシート */
+/* 地図クラフト - リアルパズル ＆ 3D地球儀 スタイルシート */
 
 :root {
   --primary-color: #38a169;
@@ -7,9 +7,6 @@
   --accent-color: #dd6b20;
   --gold-color: #ecc94b;
   --bg-dark: #1a202c;
-  --bg-card: rgba(26, 32, 44, 0.88);
-  --bg-modal: rgba(255, 255, 255, 0.96);
-  --border-craft: 3px solid #2d3748;
   --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "BIZ UDPGothic", Meiryo, sans-serif;
 }
 
@@ -26,11 +23,10 @@ html, body {
   height: 100%;
   overflow: hidden;
   font-family: var(--font-main);
-  background-color: #bbf2f6;
+  background-color: #bfe8f5;
   color: #2d3748;
 }
 
-/* 3Dキャンバスコンテナ */
 #canvas-container {
   position: absolute;
   top: 0;
@@ -54,38 +50,36 @@ html, body {
   justify-content: space-between;
 }
 
-/* トップコントロールバー */
+/* トップバー */
 .top-bar {
   pointer-events: auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 20px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(8px);
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
   border-bottom: 3px solid #cbd5e0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .brand-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .logo-text {
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: #2d3748;
-  letter-spacing: -0.5px;
-  text-shadow: 1px 1px 0 #fff;
 }
 
 .logo-badge {
   background: #38a169;
   color: #fff;
   font-size: 0.75rem;
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 6px;
   font-weight: bold;
 }
@@ -102,8 +96,8 @@ html, body {
 .mode-tab {
   background: transparent;
   border: none;
-  padding: 8px 16px;
-  font-size: 0.95rem;
+  padding: 8px 14px;
+  font-size: 0.9rem;
   font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
@@ -117,8 +111,13 @@ html, body {
   box-shadow: 0 2px 6px rgba(49, 130, 206, 0.4);
 }
 
-/* 地域セレクター */
-.region-wrapper {
+.mode-tab-quiz.active {
+  background: #dd6b20 !important;
+  box-shadow: 0 2px 6px rgba(221, 107, 32, 0.4) !important;
+}
+
+/* セレクター群 */
+.controls-group {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -128,48 +127,41 @@ html, body {
   background: #fff;
   border: 2px solid #cbd5e0;
   border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 0.95rem;
+  padding: 7px 12px;
+  font-size: 0.9rem;
   font-weight: bold;
   color: #2d3748;
   cursor: pointer;
   outline: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
-.craft-select:focus {
-  border-color: #3182ce;
+.diff-select {
+  border-color: #ecc94b;
+  background: #fffff0;
 }
 
-/* ツールボタングループ */
+/* ツールボタン */
 .top-tools {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .tool-btn {
   background: #fff;
   border: 2px solid #cbd5e0;
   border-radius: 8px;
-  padding: 7px 12px;
-  font-size: 0.85rem;
+  padding: 6px 10px;
+  font-size: 0.8rem;
   font-weight: bold;
   color: #4a5568;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: 0 2px 0 #cbd5e0;
 }
 
 .tool-btn:hover {
   background: #f7fafc;
   transform: translateY(-1px);
-  box-shadow: 0 3px 0 #cbd5e0;
-}
-
-.tool-btn:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 0 #cbd5e0;
 }
 
 .tool-btn.btn-active {
@@ -182,10 +174,10 @@ html, body {
 .status-bar {
   pointer-events: auto;
   align-self: center;
-  margin-top: 10px;
-  background: rgba(255, 255, 255, 0.92);
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(6px);
-  padding: 8px 18px;
+  padding: 6px 16px;
   border-radius: 30px;
   border: 2px solid #e2e8f0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -195,7 +187,7 @@ html, body {
 }
 
 .timer-box {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: #4a5568;
 }
@@ -203,14 +195,14 @@ html, body {
 .progress-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .progress-bar {
-  width: 140px;
-  height: 14px;
+  width: 130px;
+  height: 12px;
   background: #edf2f7;
-  border-radius: 7px;
+  border-radius: 6px;
   border: 2px solid #cbd5e0;
   overflow: hidden;
 }
@@ -223,39 +215,94 @@ html, body {
 }
 
 .progress-label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #2d3748;
 }
 
-/* 下部インベントリトレイ (ホットバー風) */
+/* 🔍 形状ズームビューア (暗記用リアルタイムクローズアップ) */
+.shape-zoom-viewer {
+  pointer-events: none;
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px) scale(0.9);
+  background: rgba(255, 255, 255, 0.95);
+  border: 3px solid #3182ce;
+  border-radius: 18px;
+  padding: 14px 24px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 50;
+  opacity: 0;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.shape-zoom-viewer.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.zoom-shape-svg {
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoom-shape-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #2d3748;
+}
+
+.zoom-shape-name rt {
+  font-size: 0.75rem;
+  color: #718096;
+}
+
+.zoom-shape-hint {
+  font-size: 0.85rem;
+  color: #b7791f;
+  background: #fffaf0;
+  border: 1px dashed #ecc94b;
+  padding: 4px 10px;
+  border-radius: 8px;
+  max-width: 320px;
+  text-align: center;
+}
+
+/* 下部インベントリトレイ */
 .inventory-tray {
   pointer-events: auto;
-  margin: 0 auto 16px auto;
-  max-width: 90%;
-  background: rgba(26, 32, 44, 0.88);
+  margin: 0 auto 14px auto;
+  max-width: 92%;
+  background: rgba(26, 32, 44, 0.9);
   backdrop-filter: blur(10px);
-  padding: 10px 16px;
+  padding: 8px 14px;
   border-radius: 16px;
   border: 3px solid #4a5568;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .tray-title {
   color: #e2e8f0;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: bold;
   text-align: center;
-  margin-bottom: 8px;
-  letter-spacing: 0.5px;
+  margin-bottom: 6px;
 }
 
 .inventory-items {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   overflow-x: auto;
-  padding: 4px 4px 8px 4px;
-  max-width: 820px;
+  padding: 4px 4px 6px 4px;
+  max-width: 860px;
 }
 
 .inventory-items::-webkit-scrollbar {
@@ -270,18 +317,18 @@ html, body {
 /* ピースカード */
 .inventory-card {
   flex: 0 0 auto;
-  width: 95px;
+  width: 90px;
   background: #2d3748;
   border: 2px solid #718096;
   border-radius: 10px;
-  padding: 8px 6px;
+  padding: 6px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  cursor: pointer;
+  cursor: grab;
   transition: all 0.15s ease;
-  box-shadow: 0 4px 0 #1a202c;
+  box-shadow: 0 3px 0 #1a202c;
   color: #fff;
   text-align: center;
 }
@@ -290,29 +337,28 @@ html, body {
   background: #3b465a;
   border-color: #63b3ed;
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 #1a202c;
 }
 
 .inventory-card:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #1a202c;
+  cursor: grabbing;
 }
 
 .inventory-card.placed {
-  opacity: 0.35;
+  opacity: 0.3;
   filter: grayscale(80%);
-  border-color: #4a5568;
-  cursor: default;
   pointer-events: none;
 }
 
-.card-icon {
-  font-size: 1.8rem;
-  line-height: 1;
+.card-shape-preview {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card-name {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 800;
   line-height: 1.1;
   display: block;
@@ -320,14 +366,7 @@ html, body {
 
 .card-name rt {
   font-size: 0.6rem;
-  font-weight: normal;
   color: #cbd5e0;
-}
-
-.card-capital {
-  font-size: 0.65rem;
-  color: #a0aec0;
-  margin-top: 2px;
 }
 
 /* モーダル共通 */
@@ -337,7 +376,7 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
@@ -372,14 +411,14 @@ html, body {
 .modal-header {
   background: #2d3748;
   color: #ffffff;
-  padding: 14px 20px;
+  padding: 12px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .modal-title {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -402,9 +441,6 @@ html, body {
   height: 32px;
   border-radius: 8px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .modal-close-btn:hover {
@@ -412,29 +448,29 @@ html, body {
 }
 
 .modal-body {
-  padding: 20px;
+  padding: 18px;
   max-height: 75vh;
   overflow-y: auto;
 }
 
 /* ヒントセクション */
 .hint-group {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .hint-label {
   font-size: 0.85rem;
   font-weight: 800;
   color: #4a5568;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .capital-display {
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: #2b6cb0;
   background: #ebf8ff;
-  padding: 8px 14px;
+  padding: 7px 12px;
   border-radius: 8px;
   border-left: 4px solid #3182ce;
 }
@@ -442,15 +478,15 @@ html, body {
 .badge-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .hint-badge {
   background: #f7fafc;
   border: 1.5px solid #e2e8f0;
   border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 0.85rem;
+  padding: 5px 9px;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #2d3748;
   display: inline-flex;
@@ -464,77 +500,115 @@ html, body {
   color: #7b341e;
 }
 
+.shape-desc-box {
+  background: #f0fff4;
+  border: 2px solid #9ae6b4;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #22543d;
+  font-weight: 600;
+}
+
 .trivia-box {
   background: #fffff0;
   border: 2px dashed #ecc94b;
   border-radius: 10px;
-  padding: 12px;
+  padding: 10px;
   font-size: 0.85rem;
-  line-height: 1.5;
+  line-height: 1.4;
   color: #744210;
 }
 
-/* クラフト選択ボタンリスト */
-.choices-container {
+.drag-guide-box {
+  background: #ebf8ff;
+  border: 2px solid #3182ce;
+  border-radius: 12px;
+  padding: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 14px;
+  align-items: center;
+  gap: 12px;
 }
 
-.btn-craft-choice {
-  background: #38a169;
-  border: 2px solid #276749;
-  border-radius: 12px;
+.guide-icon {
+  font-size: 2rem;
+}
+
+.guide-text {
+  font-size: 0.85rem;
+  color: #2b6cb0;
+  line-height: 1.4;
+}
+
+/* ⚡ シルエット特訓ミニゲームモーダル */
+.quiz-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.quiz-badge {
+  background: #dd6b20;
   color: #fff;
-  font-size: 1rem;
-  padding: 12px 16px;
-  cursor: pointer;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.quiz-silhouette-card {
+  background: #edf2f7;
+  border-radius: 16px;
+  border: 3px solid #cbd5e0;
+  height: 230px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-weight: bold;
-  box-shadow: 0 4px 0 #276749;
+  margin-bottom: 16px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.quiz-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quiz-choice-btn {
+  background: #fff;
+  border: 2px solid #3182ce;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #2b6cb0;
+  cursor: pointer;
   transition: all 0.15s ease;
+  box-shadow: 0 4px 0 #2b6cb0;
 }
 
-.btn-craft-choice:hover {
-  background: #48bb78;
+.quiz-choice-btn:hover {
+  background: #ebf8ff;
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 #276749;
 }
 
-.btn-craft-choice:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #276749;
+.quiz-choice-btn.btn-correct {
+  background: #38a169;
+  border-color: #276749;
+  color: #fff;
+  box-shadow: 0 4px 0 #276749;
 }
 
-.btn-craft-choice.btn-wrong {
+.quiz-choice-btn.btn-wrong {
   background: #e53e3e;
   border-color: #9b2c2c;
+  color: #fff;
   box-shadow: 0 4px 0 #9b2c2c;
-  animation: shake 0.4s ease;
 }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-8px); }
-  75% { transform: translateX(8px); }
-}
-
-.completed-badge {
-  background: #c6f6d5;
-  border: 2px solid #38a169;
-  color: #22543d;
-  padding: 12px;
-  border-radius: 10px;
-  text-align: center;
-  font-weight: 800;
-  font-size: 0.95rem;
-}
-
-/* コンプリートモーダル演出 */
+/* コンプリートモーダル */
 .complete-content {
   text-align: center;
   padding: 24px 20px;
@@ -543,25 +617,12 @@ html, body {
 .complete-icon {
   font-size: 4rem;
   margin-bottom: 8px;
-  animation: bounce 1s infinite alternate;
-}
-
-@keyframes bounce {
-  from { transform: translateY(0); }
-  to { transform: translateY(-10px); }
 }
 
 .complete-title {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: #276749;
-  margin-bottom: 6px;
-}
-
-.complete-stars {
-  font-size: 2.2rem;
-  letter-spacing: 4px;
-  margin: 10px 0;
 }
 
 .complete-stats {
@@ -573,7 +634,7 @@ html, body {
 
 .stat-item {
   background: #edf2f7;
-  padding: 10px 16px;
+  padding: 8px 16px;
   border-radius: 10px;
 }
 
@@ -585,7 +646,6 @@ html, body {
 .stat-value {
   font-size: 1.1rem;
   font-weight: 800;
-  color: #2d3748;
 }
 
 .btn-primary-craft {
@@ -594,52 +654,36 @@ html, body {
   color: #fff;
   font-size: 1rem;
   font-weight: 800;
-  padding: 12px 30px;
+  padding: 10px 26px;
   border-radius: 12px;
   cursor: pointer;
   box-shadow: 0 4px 0 #2b6cb0;
-  transition: all 0.15s ease;
 }
 
-.btn-primary-craft:hover {
-  background: #4299e1;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 0 #2b6cb0;
-}
-
-/* ルビ非表示 */
 .hide-ruby rt {
   display: none !important;
 }
 
-/* レスポンシブ対応 */
 @media (max-width: 768px) {
   .top-bar {
     flex-wrap: wrap;
-    padding: 8px 12px;
-    gap: 8px;
+    padding: 6px 10px;
+    gap: 6px;
   }
-  .brand-section {
+  .controls-group {
     width: 100%;
     justify-content: space-between;
-  }
-  .mode-tabs {
-    flex: 1;
   }
   .top-tools {
     width: 100%;
     justify-content: flex-end;
   }
   .status-bar {
-    width: 90%;
-    justify-content: space-between;
+    width: 92%;
     padding: 6px 12px;
-  }
-  .progress-bar {
-    width: 90px;
   }
   .inventory-tray {
     max-width: 96%;
-    padding: 8px;
+    padding: 6px;
   }
 }

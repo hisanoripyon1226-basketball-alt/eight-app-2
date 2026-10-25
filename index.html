@@ -3,15 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>地図クラフト - 3D MapCraft (日本＆世界を楽しく学習！)</title>
-  <meta name="description" content="Three.jsで作られた3Dボクセル地図パズル！首都や特産品・名所をヒントに、日本地図（地方別）と世界地図（大陸別）を楽しくクラフトしよう！">
+  <title>地図クラフト - リアル日本地図パズル ＆ 3D地球儀 (楽しく形を暗記！)</title>
+  <meta name="description" content="本物のリアルな都道府県の形をドラッグ＆ドロップで白地図にハメる立体パズル！リアルな3D地球儀モードやシルエット特訓モードで、国や県の形が完璧に覚えられる！">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗺️</text></svg>">
 </head>
 <body>
 
-  <!-- 3D WebGL レンダラー配置領域 -->
+  <!-- 3D WebGL レンダラー領域 -->
   <div id="canvas-container"></div>
+
+  <!-- 🔍 形状ズームビューア (ドラッグ中や選択中にリアルなシルエットを拡大表示！) -->
+  <div id="shape-zoom-viewer" class="shape-zoom-viewer">
+    <div id="zoom-shape-svg" class="zoom-shape-svg"></div>
+    <div id="zoom-shape-name" class="zoom-shape-name">青森県</div>
+    <div id="zoom-shape-hint" class="zoom-shape-hint">💡 形の特徴: クワガタのハサミのような2つの半島！</div>
+  </div>
 
   <!-- UI オーバーレイ -->
   <div class="ui-overlay">
@@ -19,26 +26,33 @@
     <header class="top-bar">
       <div class="brand-section">
         <h1 class="logo-text">🗺️ 地図クラフト</h1>
-        <span class="logo-badge">3D MapCraft</span>
+        <span class="logo-badge">リアル立体パズル</span>
       </div>
 
       <!-- モード切り替えタブ -->
       <nav class="mode-tabs">
         <button class="mode-tab active" data-mode="japan">🗾 日本地図</button>
-        <button class="mode-tab" data-mode="world">🌍 世界地図</button>
+        <button class="mode-tab" data-mode="world">🌍 リアル地球儀</button>
+        <button class="mode-tab mode-tab-quiz" data-mode="quiz">⚡ シルエット特訓</button>
       </nav>
 
-      <!-- 地域・大陸セレクター -->
-      <div class="region-wrapper">
+      <!-- セレクター群 (地域 ＆ 難易度) -->
+      <div class="controls-group">
         <select id="region-select" class="craft-select" aria-label="地域選択"></select>
+        <select id="difficulty-select" class="craft-select diff-select" aria-label="難易度選択">
+          <option value="easy">🔰 入門 (境界線＋色分け)</option>
+          <option value="normal">⭐ 中級 (純白の白地図)</option>
+          <option value="hard">🔥 達人 (境界線なし完全白紙)</option>
+        </select>
       </div>
 
-      <!-- ツールボタン -->
+      <!-- ツールボタングループ -->
       <div class="top-tools">
+        <button id="btn-voice" class="tool-btn btn-active" title="音声読み上げ">🗣️ 音声読上: ON</button>
         <button id="btn-sound" class="tool-btn btn-active" title="効果音のON/OFF">🔊 サウンド: ON</button>
         <button id="btn-bgm" class="tool-btn" title="BGMのON/OFF">🎵 BGM: OFF</button>
         <button id="btn-ruby" class="tool-btn btn-active" title="ふりがなの表示/非表示">📛 ふりがな: ON</button>
-        <button id="btn-reset-cam" class="tool-btn" title="視点を全体に戻す">🎥 視点リセット</button>
+        <button id="btn-reset-cam" class="tool-btn" title="視点をリセット">🎥 視点リセット</button>
         <button id="btn-help" class="tool-btn" title="あそびかた">❓ あそびかた</button>
       </div>
     </header>
@@ -54,25 +68,25 @@
       </div>
     </section>
 
-    <!-- 下部インベントリトレイ (手持ちピース一覧) -->
+    <!-- 下部インベントリトレイ (リアル形状ピース一覧) -->
     <footer class="inventory-tray">
-      <div class="tray-title">🎒 クラフトピース・インベントリ（ピースを選んで配置、または地図の「？」をクリック！）</div>
+      <div class="tray-title">🎒 ピーストレイ（ドラッグ＆ドロップで白地図にハメよう！クリックでも配置できるよ）</div>
       <div id="inventory-items" class="inventory-items"></div>
     </footer>
   </div>
 
-  <!-- ヒント＆クラフトモーダル (空白クリック・図鑑共通) -->
+  <!-- ヒントモーダル (答えは出さずヒント情報のみ表示！) -->
   <div id="modal-hint" class="modal-overlay">
     <div class="modal-window">
       <div class="modal-header">
         <div class="modal-title">
-          <span>🧩 ヒント・クラフトステーション</span>
+          <span>🧩 この場所のヒント</span>
           <span id="hint-region-badge" class="region-badge">地方</span>
         </div>
         <button id="btn-close-hint" class="modal-close-btn" aria-label="閉じる">✕</button>
       </div>
       <div class="modal-body">
-        <!-- 首都 / 県庁所在地 -->
+        <!-- 首都 / 県庁所在地 (名前は出さない！) -->
         <div class="hint-group">
           <div id="hint-capital-title" class="hint-label">🏛️ 県庁所在地 / 首都</div>
           <div id="hint-capital-value" class="capital-display">---</div>
@@ -90,17 +104,47 @@
           <div id="hint-landmarks" class="badge-list"></div>
         </div>
 
-        <!-- 豆知識・クイズヒント -->
+        <!-- 形状の特徴ヒント -->
         <div class="hint-group">
-          <div class="hint-label">💡 豆知識ヒント</div>
+          <div class="hint-label">🧩 形状の特徴ヒント</div>
+          <div id="hint-shape-desc" class="shape-desc-box">---</div>
+        </div>
+
+        <!-- 豆知識ヒント -->
+        <div class="hint-group">
+          <div class="hint-label">💡 豆知識トリビア</div>
           <div id="hint-trivia-text" class="trivia-box">---</div>
         </div>
 
-        <!-- クラフト選択肢ボタン -->
+        <!-- 推理案内バナー (答えの選択肢は出さない！) -->
         <div class="hint-group">
-          <div class="hint-label">🔨 ここに当てはまるピースはどれかな？</div>
-          <div id="hint-choices" class="choices-container"></div>
+          <div id="hint-choices"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⚡ シルエット特訓ミニゲームモーダル -->
+  <div id="modal-silhouette-quiz" class="modal-overlay">
+    <div class="modal-window">
+      <div class="modal-header" style="background: #c05621;">
+        <div class="modal-title">⚡ シルエット瞬間記憶特訓！</div>
+        <button id="btn-close-quiz" class="modal-close-btn" aria-label="閉じる">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="quiz-header-bar">
+          <span id="quiz-step" style="font-weight: 800; font-size: 1.05rem;">1 / 10 問目</span>
+          <span id="quiz-score-badge" class="quiz-badge">スコア: 0</span>
+        </div>
+        <!-- シルエット表示カード -->
+        <div class="quiz-silhouette-card">
+          <div id="quiz-silhouette-view"></div>
+        </div>
+        <div style="text-align: center; font-size: 0.9rem; font-weight: bold; color: #4a5568; margin-bottom: 10px;">
+          このシルエットはどの都道府県かな？
+        </div>
+        <!-- 3択ボタン -->
+        <div id="quiz-choices-container" class="quiz-choices"></div>
       </div>
     </div>
   </div>
@@ -110,9 +154,8 @@
     <div class="modal-window">
       <div class="modal-body complete-content">
         <div class="complete-icon">🏆✨</div>
-        <h2 class="complete-title"><span id="comp-region-name">北海道・東北地方</span> クラフト完了！</h2>
-        <p style="color: #4a5568; font-size: 0.95rem;">見事にすべてのブロックを正しい位置に配置しました！</p>
-        <div id="comp-stars" class="complete-stars">⭐⭐⭐</div>
+        <h2 class="complete-title"><span id="comp-region-name">北海道・東北地方</span> 完全制覇！</h2>
+        <p style="color: #4a5568; font-size: 0.95rem; margin-top: 4px;">本物の形状を完璧にマスターしました！</p>
 
         <div class="complete-stats">
           <div class="stat-item">
@@ -138,41 +181,45 @@
         <button id="btn-close-help" class="modal-close-btn" aria-label="閉じる">✕</button>
       </div>
       <div class="modal-body" style="font-size: 0.9rem; line-height: 1.6; color: #2d3748;">
-        <h3 style="color: #2b6cb0; margin-bottom: 6px;">🎮 基本的なルール</h3>
+        <h3 style="color: #2b6cb0; margin-bottom: 6px;">🎯 本物の形を覚えるルール</h3>
         <p style="margin-bottom: 12px;">
-          立体的なボクセル世界に、空白の地図スロット（「？」ブロック）が並んでいます。<br>
-          首都や特産品、名所をヒントに、正しい都道府県や国のブロックを埋め込んでマップを完成させましょう！
+          各都道府県や国は、<strong>本物の境界線とシルエット</strong>を持ったリアルな立体ピースです！<br>
+          下部のトレイからピースを<strong>ドラッグ＆ドロップ</strong>して、白地図の正しい位置へカチッとはめ込みましょう。
         </p>
 
-        <h3 style="color: #2b6cb0; margin-bottom: 6px;">🖱️ 2つのクラフト方法</h3>
-        <ol style="margin-left: 20px; margin-bottom: 14px;">
-          <li><strong>空白の「？」をクリック：</strong> ヒントを見て3択クイズから正解を選んでクラフト！</li>
-          <li><strong>下部のインベントリから選ぶ：</strong> 手持ちのカードをクリックすると、該当の場所にズームしてカチッと配置！</li>
-        </ol>
+        <h3 style="color: #2b6cb0; margin-bottom: 6px;">💡 ヒントの使いかた</h3>
+        <p style="margin-bottom: 12px;">
+          白地図の「？」ピンをクリックすると、県庁所在地や特産品・形状の特徴などのヒントが表示されます。<br>
+          <strong>※答えは表示されない</strong>ので、ヒントから推理して正しい形のピースを探しましょう！
+        </p>
 
-        <h3 style="color: #2b6cb0; margin-bottom: 6px;">👀 3Dカメラの操作</h3>
-        <ul style="margin-left: 20px; margin-bottom: 14px;">
-          <li><strong>左ボタンドラッグ / スワイプ：</strong> マップを360度自由に回転</li>
-          <li><strong>右ボタンドラッグ / 2本指スワイプ：</strong> 平行移動（パン）</li>
-          <li><strong>マウスホイール / ピンチイン・アウト：</strong> 拡大・縮小（ズーム）</li>
+        <h3 style="color: #2b6cb0; margin-bottom: 6px;">🔥 難易度モード（くもん式ステップアップ）</h3>
+        <ul style="margin-left: 20px; margin-bottom: 12px;">
+          <li><strong>入門:</strong> 地方ごとに色分けされ、境界線もあります。</li>
+          <li><strong>中級:</strong> 純白の白地図！色に頼らず形と位置で勝負。</li>
+          <li><strong>達人:</strong> 境界線すら存在しない完全白紙マップ！海岸線と隣接県の噛み合わせだけで完成させよう。</li>
         </ul>
 
-        <h3 style="color: #2b6cb0; margin-bottom: 6px;">✨ 配置後の楽しみ方</h3>
+        <h3 style="color: #2b6cb0; margin-bottom: 6px;">⚡ シルエット特訓モード</h3>
         <p>
-          配置が完了したブロックをクリックすると、いつでも詳細な<strong>「クラフトずかん」</strong>を見ることができます！
+          画面上部の「⚡ シルエット特訓」タブを押すと、シルエットだけを見て瞬時に県名を当てるスピード暗記特訓ができます！
         </p>
       </div>
     </div>
   </div>
 
-  <!-- Three.js & CDN ライブラリ -->
+  <!-- CDN & ライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
+  <!-- TopoJSON クライアント (ローカル保存済み) -->
+  <script src="js/topojson-client.min.js"></script>
+
   <!-- アプリケーションスクリプト -->
   <script src="js/data-japan.js"></script>
   <script src="js/data-world.js"></script>
+  <script src="js/geo-utils.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/mapcraft-3d.js"></script>
   <script src="js/app.js"></script>
