@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>地図クラフト - 3D MapCraft (日本＆世界を楽しく学習！)</title>
+  <meta name="description" content="Three.jsで作られた3Dボクセル地図パズル！首都や特産品・名所をヒントに、日本地図（地方別）と世界地図（大陸別）を楽しくクラフトしよう！">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗺️</text></svg>">
+</head>
+<body>
+
+  <!-- 3D WebGL レンダラー配置領域 -->
+  <div id="canvas-container"></div>
+
+  <!-- UI オーバーレイ -->
+  <div class="ui-overlay">
+    <!-- トップナビゲーションバー -->
+    <header class="top-bar">
+      <div class="brand-section">
+        <h1 class="logo-text">🗺️ 地図クラフト</h1>
+        <span class="logo-badge">3D MapCraft</span>
+      </div>
+
+      <!-- モード切り替えタブ -->
+      <nav class="mode-tabs">
+        <button class="mode-tab active" data-mode="japan">🗾 日本地図</button>
+        <button class="mode-tab" data-mode="world">🌍 世界地図</button>
+      </nav>
+
+      <!-- 地域・大陸セレクター -->
+      <div class="region-wrapper">
+        <select id="region-select" class="craft-select" aria-label="地域選択"></select>
+      </div>
+
+      <!-- ツールボタン -->
+      <div class="top-tools">
+        <button id="btn-sound" class="tool-btn btn-active" title="効果音のON/OFF">🔊 サウンド: ON</button>
+        <button id="btn-bgm" class="tool-btn" title="BGMのON/OFF">🎵 BGM: OFF</button>
+        <button id="btn-ruby" class="tool-btn btn-active" title="ふりがなの表示/非表示">📛 ふりがな: ON</button>
+        <button id="btn-reset-cam" class="tool-btn" title="視点を全体に戻す">🎥 視点リセット</button>
+        <button id="btn-help" class="tool-btn" title="あそびかた">❓ あそびかた</button>
+      </div>
+    </header>
+
+    <!-- サブステータスバー (タイマー & 進捗) -->
+    <section class="status-bar">
+      <div id="timer-display" class="timer-box">⏱️ 00:00</div>
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <span id="progress-text" class="progress-label">0 / 0 完成 (0%)</span>
+      </div>
+    </section>
+
+    <!-- 下部インベントリトレイ (手持ちピース一覧) -->
+    <footer class="inventory-tray">
+      <div class="tray-title">🎒 クラフトピース・インベントリ（ピースを選んで配置、または地図の「？」をクリック！）</div>
+      <div id="inventory-items" class="inventory-items"></div>
+    </footer>
+  </div>
+
+  <!-- ヒント＆クラフトモーダル (空白クリック・図鑑共通) -->
+  <div id="modal-hint" class="modal-overlay">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🧩 ヒント・クラフトステーション</span>
+          <span id="hint-region-badge" class="region-badge">地方</span>
+        </div>
+        <button id="btn-close-hint" class="modal-close-btn" aria-label="閉じる">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- 首都 / 県庁所在地 -->
+        <div class="hint-group">
+          <div id="hint-capital-title" class="hint-label">🏛️ 県庁所在地 / 首都</div>
+          <div id="hint-capital-value" class="capital-display">---</div>
+        </div>
+
+        <!-- 特産品・名物 -->
+        <div class="hint-group">
+          <div class="hint-label">🍎 代表的な特産品・名産物</div>
+          <div id="hint-specialties" class="badge-list"></div>
+        </div>
+
+        <!-- 名所・観光地 -->
+        <div class="hint-group">
+          <div class="hint-label">🏯 有名な名所・シンボル</div>
+          <div id="hint-landmarks" class="badge-list"></div>
+        </div>
+
+        <!-- 豆知識・クイズヒント -->
+        <div class="hint-group">
+          <div class="hint-label">💡 豆知識ヒント</div>
+          <div id="hint-trivia-text" class="trivia-box">---</div>
+        </div>
+
+        <!-- クラフト選択肢ボタン -->
+        <div class="hint-group">
+          <div class="hint-label">🔨 ここに当てはまるピースはどれかな？</div>
+          <div id="hint-choices" class="choices-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- コンプリート祝福モーダル -->
+  <div id="modal-complete" class="modal-overlay">
+    <div class="modal-window">
+      <div class="modal-body complete-content">
+        <div class="complete-icon">🏆✨</div>
+        <h2 class="complete-title"><span id="comp-region-name">北海道・東北地方</span> クラフト完了！</h2>
+        <p style="color: #4a5568; font-size: 0.95rem;">見事にすべてのブロックを正しい位置に配置しました！</p>
+        <div id="comp-stars" class="complete-stars">⭐⭐⭐</div>
+
+        <div class="complete-stats">
+          <div class="stat-item">
+            <div class="stat-title">クリアタイム</div>
+            <div id="comp-time" class="stat-value">01:23</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-title">ヒント使用回数</div>
+            <div id="comp-hints" class="stat-value">2 回</div>
+          </div>
+        </div>
+
+        <button id="btn-close-complete" class="btn-primary-craft">🎉 3Dワールドを自由に眺める</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- あそびかたモーダル -->
+  <div id="modal-help" class="modal-overlay">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title">📖 地図クラフトのあそびかた</div>
+        <button id="btn-close-help" class="modal-close-btn" aria-label="閉じる">✕</button>
+      </div>
+      <div class="modal-body" style="font-size: 0.9rem; line-height: 1.6; color: #2d3748;">
+        <h3 style="color: #2b6cb0; margin-bottom: 6px;">🎮 基本的なルール</h3>
+        <p style="margin-bottom: 12px;">
+          立体的なボクセル世界に、空白の地図スロット（「？」ブロック）が並んでいます。<br>
+          首都や特産品、名所をヒントに、正しい都道府県や国のブロックを埋め込んでマップを完成させましょう！
+        </p>
+
+        <h3 style="color: #2b6cb0; margin-bottom: 6px;">🖱️ 2つのクラフト方法</h3>
+        <ol style="margin-left: 20px; margin-bottom: 14px;">
+          <li><strong>空白の「？」をクリック：</strong> ヒントを見て3択クイズから正解を選んでクラフト！</li>
+          <li><strong>下部のインベントリから選ぶ：</strong> 手持ちのカードをクリックすると、該当の場所にズームしてカチッと配置！</li>
+        </ol>
+
+        <h3 style="color: #2b6cb0; margin-bottom: 6px;">👀 3Dカメラの操作</h3>
+        <ul style="margin-left: 20px; margin-bottom: 14px;">
+          <li><strong>左ボタンドラッグ / スワイプ：</strong> マップを360度自由に回転</li>
+          <li><strong>右ボタンドラッグ / 2本指スワイプ：</strong> 平行移動（パン）</li>
+          <li><strong>マウスホイール / ピンチイン・アウト：</strong> 拡大・縮小（ズーム）</li>
+        </ul>
+
+        <h3 style="color: #2b6cb0; margin-bottom: 6px;">✨ 配置後の楽しみ方</h3>
+        <p>
+          配置が完了したブロックをクリックすると、いつでも詳細な<strong>「クラフトずかん」</strong>を見ることができます！
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three.js & CDN ライブラリ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- アプリケーションスクリプト -->
+  <script src="js/data-japan.js"></script>
+  <script src="js/data-world.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/mapcraft-3d.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
